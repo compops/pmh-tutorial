@@ -13,77 +13,79 @@
 # Generate data for LGSS model
 ##############################################################################
 
-generateData <- function(phi,sigmaV,sigmaE,T,xo)
+generateData <- function(phi,sigmav,sigmae,T,xo)
 {
   # Pre-allocate vectors for log-volatility/state (x) 
   # and log-returns/observations (y)
-  x    = matrix(0, nrow=T, ncol=1)
-  y    = matrix(0, nrow=T, ncol=1)
+  x    = matrix( 0, nrow=T+1, ncol=1 );
+  y    = matrix( 0, nrow=T+1, ncol=1 );
   
   # Set the initial state
   x[1] = xo;
-  y[1] = xo + sigmaE * rnorm(1)
+  y[1] = NA;
   
   # Simulate the system for each time step
-  for ( tt in 2:T ) {
-    x[tt] = phi  * x[tt-1] + sigmaV * rnorm(1);
-    y[tt] =        x[tt]   + sigmaE * rnorm(1);
+  for ( tt in 2:(T+1) ) {
+    x[tt] = phi  * x[tt-1] + sigmav * rnorm(1);
+    y[tt] =        x[tt]   + sigmae * rnorm(1);
   }
   
-  data.frame(x=x, y=y)
+  list(x=x, y=y);
 }
 
 
 ##############################################################################
-# Bootstrap particle filter (LGSS)
+# Fully-adapted particle filter (LGSS)
 ##############################################################################
 
 sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
 {
   # Initalise variables
-  xhatf = matrix( x0,      nrow=T+1, ncol=1)
-  p     = matrix( x0,      nrow=nPart, ncol=T+1)
-  w     = matrix( 1/nPart, nrow=nPart, ncol=T+1)
+  xhatf = matrix( x0,      nrow=T,     ncol=1   );
+  p     = matrix( x0,      nrow=nPart, ncol=T+1 );
+  w     = matrix( 1/nPart, nrow=nPart, ncol=T+1 );
   ll    = 0;
 
   #===========================================================
   # Run main loop
   #===========================================================
-  for ( tt in 2:(T+1) )
+  for ( tt in 2:T )
   {
     #=========================================================
     # Resample ( multinomial )
     #=========================================================
-    nIdx   = sample(1:nPart, nPart, replace=T, prob = w[,tt-1] )
+    nIdx   = sample( 1:nPart, nPart, replace=T, prob = w[,tt-1] );
     
     #=========================================================
     # Propagate
     #=========================================================
-    p[,tt] = phi * p[nIdx,tt-1] + rnorm(nPart, 0, sigmav ) 
+    Delta  = ( sigmav^(-2) + sigmae^(-2) )^(-1);
+    mup    = sigmae^(-2) * y[tt] + sigmav^(-2) * phi * p[nIdx,tt-1];
+    p[,tt] = Delta * mup + rnorm( nPart, 0, sqrt( Delta ) );
     
     #=========================================================
     # Compute weights
     #=========================================================
-    w[,tt] = dnorm( y[tt-1], p[,tt], sigmae, log=T)
+    w[,tt] = dnorm( y[tt+1], phi * p[,tt], sqrt( sigmae^2 + sigmav^2), log=T );
     
     # Rescale log-weights and recover weight
-    wmax   = max(w[,tt]);
-    w[,tt] = exp(w[,tt] - wmax)
+    wmax   = max( w[,tt] );
+    w[,tt] = exp( w[,tt] - wmax );
     
     # Estimate the log-likelihood
-    ll     = ll + wmax + log(sum(w[,tt])) - log(nPart);
+    ll     = ll + wmax + log( sum(w[,tt]) ) - log(nPart);
     
     # Normalize the weights
-    w[,tt] = w[,tt] / sum(w[,tt])
+    w[,tt] = w[,tt] / sum( w[,tt] );
     
     # Estimate the state
-    xhatf[tt] = sum( w[,tt] * p[,tt] )
+    xhatf[tt] = mean( p[,tt] );
     
   }
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
-  output = list( xh = xhatf, ll=ll)
+  list( xh = xhatf, ll=ll);
 }
 
 ###################################################################################
@@ -91,10 +93,12 @@ sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
 ###################################################################################
 kf <- function(y,phi,sigmaV,sigmaE,x0,P0)
 {
-  xhatf = matrix( x0, nrow=T, ncol=1)
-  xhatp = matrix( x0, nrow=T, ncol=1)
+  T     = length(y);
+  yhatp = matrix( x0, nrow=T,   ncol=1 );
+  xhatf = matrix( x0, nrow=T,   ncol=1 );
+  xhatp = matrix( x0, nrow=T+1, ncol=1 );
   Pp       = P0;
-  T        = length(y);
+  ll       = 0;
   
   # Set parameters 
   A = phi;
@@ -102,38 +106,43 @@ kf <- function(y,phi,sigmaV,sigmaE,x0,P0)
   Q = sigmaV^2;
   R = sigmaE^2;
   
-  for ( tt in 1:T )
+  for ( tt in 2:T)
   {
     # Compute Kalman Gain
     S = C * Pp * C + R;
     K = Pp * C / S;
     
     # Compute state estimate
-    xhatf[tt]   = xhatp[tt] + K * ( y[tt] - C * xhatp[tt] );
-    xhatp[tt+1] = A * xhatf[tt]; 
+    yhatp[tt]   = C * xhatp[tt];
+    xhatf[tt]   = xhatp[tt] + K * ( y[tt] - yhatp[tt] );
+    xhatp[tt+1] = A * xhatf[tt];
     
     # Update covariance
     Pf = Pp - K * S * K;
     Pp = A * Pf * A + Q;
+    
+    # Estimate loglikelihood (not in the last iteration, to be able to compare with faPF)
+    if ( tt < T ) { ll = ll + dnorm( y[tt], yhatp[tt], sqrt(S), log=T) };
   }
-  output = list( xh = xhatf )
+  
+  list( xh = xhatf, ll=ll )
 }
 
 ##############################################################################
 # Bootstrap particle filter (SV model)
 ##############################################################################
 
-sm_sv <- function(y,phi,sigmav,beta,N,T)
+sm_sv <- function(y,mu,phi,sigmav,N,T)
 {
   # Initalise variables
-  xhatf = matrix( 0,       nrow=T+1,   ncol=1)
-  p     = matrix( 0,       nrow=nPart, ncol=T+1)
-  w     = matrix( 1/nPart, nrow=nPart, ncol=T+1)
+  xhatf = matrix( 0,       nrow=T+1,   ncol=1);
+  p     = matrix( 0,       nrow=nPart, ncol=T+1);
+  w     = matrix( 1/nPart, nrow=nPart, ncol=T+1);
   ll    = 0;
   
   # Generate initial state
-  p[,1]     = rnorm(nPart, 0, sigmav / sqrt( 1 - phi*phi ) );
-  xhatf[,1] = mean(p[,1]);
+  p[,1]     = rnorm(nPart, mu, sigmav / sqrt( 1 - phi * phi ) );
+  xhatf[,1] = mean( p[,1] );
   
   #===========================================================
   # Run main loop
@@ -143,34 +152,34 @@ sm_sv <- function(y,phi,sigmav,beta,N,T)
     #=========================================================
     # Resample ( multinomial )
     #=========================================================
-    idx = sample(1:nPart, nPart, replace=T, prob = w[,tt-1] )
+    idx = sample(1:nPart, nPart, replace=T, prob = w[,tt-1] );
     
     #=========================================================
     # Propagate
     #=========================================================
-    p[,tt] = phi * p[idx,tt-1] + rnorm(nPart, 0, sigmav ) 
+    p[,tt] = mu + phi * ( p[idx,tt-1] - mu ) + rnorm(nPart, 0, sigmav ) ;
     
     #=========================================================
     # Compute weights
     #=========================================================
-    w[,tt] = dnorm( y[tt-1], 0, beta*exp(p[,tt]/2), log=T)
+    w[,tt] = dnorm( y[tt-1], 0, exp( p[,tt] / 2 ), log=T);
     
     # Rescale log-weights and recover weight
     wmax   = max(w[,tt]);
-    w[,tt] = exp(w[,tt] - wmax)
+    w[,tt] = exp(w[,tt] - wmax);
     
     # Estimate the log-likelihood
     ll     = ll + wmax + log(sum(w[,tt])) - log(nPart);
     
     # Normalize the weights
-    w[,tt] = w[,tt] / sum(w[,tt])
+    w[,tt] = w[,tt] / sum( w[,tt] );
     
     # Estimate the state
-    xhatf[tt] = sum( w[,tt] * p[,tt] )
+    xhatf[tt] = sum( w[,tt] * p[,tt] );
     
   }
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
-  output = list( xh = xhatf, ll=ll)
+  list( xh = xhatf, ll=ll)
 }
