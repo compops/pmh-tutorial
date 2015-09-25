@@ -1,2 +1,34 @@
 # pmh-tutorial
-Source code and data for the tutorial: "Getting started with particle Metropolis-Hastings for inference in nonlinear models"
+
+This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://users.isy.liu.se/en/rt/johda87/ > and contains the code used to produce the results in the tutorial
+
+* J. Dahlin and T. B. Schön, *Getting started with particle Metropolis-Hastings for inference in nonlinear models*. Pre-print, arXiv:1510:xxxxv1, 2015. 
+
+The papers are available as a preprint from < http://arxiv.org/pdf/1510.xxxxv1 > and < http://users.isy.liu.se/en/rt/johda87/ >.
+
+Requirements
+--------------
+The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7. 
+
+The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use ofNumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
+
+Included files
+--------------
+**example1-lgss.[R,py,m]** Implements the numerical illustration in Section 2.2 of state estimation in a linear Gaussian state space (LGSS) model using the fully-adapted particle filter (faPF). The output is the filtered state estimated as presented in Figure 3.
+
+**example2-lgss.[R,py,m]** Implements the numerical illustration in Section 3.2 of parameter estimation of the parameter phi in the LGSS model using particle Metropolis-Hastings (PMH) with the faPF as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 4.
+
+**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.1 of parameter estimation of the three parameters in the stochastic volatility (SV) model using particle Metropolis-Hastings (PMH) with the bootstrap particle filter (bPF) as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 5.
+
+**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7.
+
+Supporting files
+--------------
+**stateEstimationHelper.[py,m]**
+Implementes the data generation for the LGSS model (generateData), the faPF for the LGSS model (sm), the Kalman filter for the LGSS model (kf) and the bPF for the SV model (sm_sv). In Matlab, these functions are defined in four seperate m-files with the corresponding file names.
+
+**parameterEstimationHelper.[py,m]**
+Implementes the PMH algorithm for the LGSS model (pmh) and the SV model (pmh_sv). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
+
+**omxs30data.csv**
+Scaled log-returns calculated using the closing prices of the NASDAQ OMXS30 index during the period January 2, 2012 and January 2, 2014. The data is collected from Quandl: https://www.quandl.com/data/NASDAQOMX/OMXS30.

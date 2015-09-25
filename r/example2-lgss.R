@@ -94,6 +94,7 @@ abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 
 #dev.off()
 
+# Estimate the parameter posterior mean
 mean( res[nBurnIn:nIter] )
 
 ##############################################################################

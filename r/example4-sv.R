@@ -73,10 +73,9 @@ foo3  = density(resTh[,3],kernel="e",from=0)
 thhat = colMeans(resTh)
 
 # Export plot to file
-cairo_pdf("sv-parameter-2.pdf", height = 3, width = 8)
+# cairo_pdf("sv-parameter-2.pdf", height = 3, width = 8)
 
-# Plot the parameter posterior estimate, solid black line indicate posterior mean
-# Plot the trace of the Markov chain after burn-in, solid black line indicate posterior mean
+# Plot the ACF for each dimension of the Markov chain
 layout(matrix(1:3, 1, 3, byrow = TRUE)); 
 par(mar=c(4,5,0,0))
 grid=seq(nBurnIn,nBurnIn+1000-1,1);
@@ -99,8 +98,9 @@ plot(foo3$lag,foo3$acf,col = '#66A61E', type="l",xlab="iteration",ylab=expressio
 abline(h=1.96/sqrt(nIter-nBurnIn),lty="dotted")
 abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 
-dev.off()
+# dev.off()
 
+# Compute an estimate of the IACT using the first 100 ACF coefficients
 iact = 1 + 2 * c( sum(foo1$acf), sum(foo2$acf), sum(foo3$acf) )
 
 ##############################################################################

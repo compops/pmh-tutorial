@@ -15,6 +15,21 @@
 
 generateData <- function(phi,sigmav,sigmae,T,xo)
 {
+  #
+  # Generates the data from the LGSS model with parameters (phi,sigmav,sigmae)
+  #
+  # Inputs:
+  # phi, sigmav, sigmae: the persistence of the state and the 
+  #                      standard deviations of the state innovations and 
+  #                      observation noise.
+  #
+  # T and xo:            the no. observations and initial state.
+  #
+  # Outputs:
+  # x,y:                 the latent state and observations
+  #
+  #
+  
   # Pre-allocate vectors for log-volatility/state (x) 
   # and log-returns/observations (y)
   x    = matrix( 0, nrow=T+1, ncol=1 );
@@ -40,7 +55,32 @@ generateData <- function(phi,sigmav,sigmae,T,xo)
 
 sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
 {
-  # Initalise variables
+  #
+  # Fully-adapted particle filter for the linear Gaussian SSM
+  #
+  # Inputs:
+  # y:                   observations from the system for t=1,...,T.
+  #  
+  # phi, sigmav, sigmae: the persistence of the state and the 
+  #                      standard deviations of the state innovations and 
+  #                      observation noise.
+  #
+  # nPart:               number of particles (N)
+  #
+  # T and xo:            the no. observations and initial state.
+  #
+  # Outputs:
+  # xh:                  vector with T elements
+  #                      estimates of the filtered state
+  #                      for each t=0,1,...,T-1.
+  #
+  # ll:                  estimate of the log-likelihood at T-1
+  #
+  #
+  
+  #===========================================================
+  # Initialise variables
+  #===========================================================
   xhatf = matrix( x0,      nrow=T,     ncol=1   );
   p     = matrix( x0,      nrow=nPart, ncol=T+1 );
   w     = matrix( 1/nPart, nrow=nPart, ncol=T+1 );
@@ -82,17 +122,40 @@ sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
     xhatf[tt] = mean( p[,tt] );
     
   }
+  
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
   list( xh = xhatf, ll=ll);
+  
 }
 
 ###################################################################################
 # Kalman filter (LGSS)
 ###################################################################################
-kf <- function(y,phi,sigmaV,sigmaE,x0,P0)
+kf <- function(y,phi,sigmav,sigmae,x0,P0)
 {
+  #
+  # Kalman filter for the linear Gaussian SSM
+  #
+  # Inputs:
+  # y:                   observations from the system for t=1,...,T.
+  #  
+  # phi, sigmav, sigmae: the persistence of the state and the 
+  #                      standard deviations of the state innovations and 
+  #                      observation noise.
+  #
+  # x0 and P0:           the initial state and the corresponding covariance
+  #
+  # Outputs:
+  # xh:                  vector with T elements
+  #                      estimates of the filtered state
+  #                      for each t=0,1,...,T-1.
+  #
+  # ll:                  estimate of the log-likelihood at T-1
+  #
+  #
+    
   T     = length(y);
   yhatp = matrix( x0, nrow=T,   ncol=1 );
   xhatf = matrix( x0, nrow=T,   ncol=1 );
@@ -103,8 +166,8 @@ kf <- function(y,phi,sigmaV,sigmaE,x0,P0)
   # Set parameters 
   A = phi;
   C = 1;
-  Q = sigmaV^2;
-  R = sigmaE^2;
+  Q = sigmav^2;
+  R = sigmae^2;
   
   for ( tt in 2:T)
   {
@@ -131,10 +194,35 @@ kf <- function(y,phi,sigmaV,sigmaE,x0,P0)
 ##############################################################################
 # Bootstrap particle filter (SV model)
 ##############################################################################
-
 sm_sv <- function(y,mu,phi,sigmav,N,T)
 {
-  # Initalise variables
+  
+  #
+  # Bootstrap particle filter for the stochastic volatility model
+  #
+  # Inputs:
+  # y:                   observations from the system for t=1,...,T.
+  #
+  # phi, sigmav, sigmae: the persistence of the state and the 
+  #                      standard deviations of the state innovations and 
+  #                      observation noise.
+  #
+  # nPart:               number of particles (N)
+  #
+  # T and xo:            the no. observations and initial state.
+  #
+  # Outputs:
+  # xh:                  vector with T+1 elements
+  #                      estimates of the filtered state
+  #                      for each t=0,1,...,T.
+  #
+  # ll:                  estimate of the log-likelihood at T
+  #
+  #
+
+  #===========================================================
+  # Initialise variables
+  #===========================================================
   xhatf = matrix( 0,       nrow=T+1,   ncol=1);
   p     = matrix( 0,       nrow=nPart, ncol=T+1);
   w     = matrix( 1/nPart, nrow=nPart, ncol=T+1);

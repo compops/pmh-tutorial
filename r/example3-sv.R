@@ -135,6 +135,7 @@ abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 
 #dev.off()
 
+# Compute an estimate of the IACT using the first 100 ACF coefficients
 iact = 1 + 2 * c( sum(foo1$acf), sum(foo2$acf), sum(foo3$acf) )
 
 ##############################################################################

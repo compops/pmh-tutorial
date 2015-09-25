@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Example of particle filtering 
+# Example of fully-adapted particle filtering 
 # in a linear Gaussian state space model
 #
 # (c) 2015 Johan Dahlin
@@ -52,11 +52,11 @@ layout(matrix(1:3, 3, 1, byrow = TRUE));
 par(mar=c(4,5,0,0))
 grid = seq(0,T);
 
-plot(y,col="#1B9E77",lwd=1.5,type="l",xlab="time",ylab="observation",bty="n",ylim=c(-6,6))
-polygon(c(grid,rev(grid)),c(y,rep(-7,T)),border=NA,col=rgb(t(col2rgb("#1B9E77"))/256,alpha=0.25))
+plot(grid,y,col="#1B9E77",lwd=1.5,type="l",xlab="time",ylab="observation",bty="n",ylim=c(-6,6))
+polygon(c(grid,rev(grid)),c(y,rep(-7,T+1)),border=NA,col=rgb(t(col2rgb("#1B9E77"))/256,alpha=0.25))
 
-plot(x,col="#D95F02",lwd=1.5,type="l",xlab="time",ylab="latent state",bty="n",ylim=c(-6,6))
-polygon(c(grid,rev(grid)),c(x,rep(-7,T)),border=NA,col=rgb(t(col2rgb("#D95F02"))/256,alpha=0.25))
+plot(grid,x,col="#D95F02",lwd=1.5,type="l",xlab="time",ylab="latent state",bty="n",ylim=c(-6,6))
+polygon(c(grid,rev(grid)),c(x,rep(-7,T+1)),border=NA,col=rgb(t(col2rgb("#D95F02"))/256,alpha=0.25))
 
 ###################################################################################
 # State estimation using the particle filter
@@ -80,18 +80,18 @@ lines( grid, outKF$xh[-(T+1)], col="black", lty="dashed",lwd=1.5)
 #dev.off()
 
 # Compute bias
-log( mean( abs(sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-log( mean( abs(sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-log( mean( abs(sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-log( mean( abs(sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-log( mean( abs(sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# log( mean( abs(sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# log( mean( abs(sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# log( mean( abs(sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# log( mean( abs(sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# log( mean( abs(sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)]) ) )
 
 # Compute MSE
-log( mean( (sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-log( mean( (sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-log( mean( (sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-log( mean( (sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-log( mean( (sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+# log( mean( (sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+# log( mean( (sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+# log( mean( (sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+# log( mean( (sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+# log( mean( (sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
 
 ###################################################################################
 # End of file

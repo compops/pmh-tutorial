@@ -13,9 +13,35 @@
 # Particle Metropolis-Hastings (LGSS model)
 ##############################################################################
 
-pmh <- function(y,initPar,sigmav,sigmae,nPart,T,xo,nIter,stepSize) {
+pmh <- function(y,initPar,sigmav,sigmae,nPart,T,xo,nIter,stepSize) 
+{
   
-  # Initalise variables
+  #
+  # Particle Metropolis-Hastings (PMH) for the LGSS model
+  #
+  # Inputs:
+  # y:                   observations from the system for t=1,...,T.
+  #
+  # initPar:             initial value for phi (persistence of the state)
+  #
+  # sigmav, sigmae:      the standard deviations of the state innovations 
+  #                      and observation noise.
+  #
+  # nPart:               number of particles (N)
+  #
+  # T and xo:            the no. observations and initial state.
+  #
+  # nIter and stepSize:  the number of iterations in PMH and the 
+  #                      standard deviation of the RW proposal.
+  #
+  # Outputs:
+  # th:                  K samples from the parameter posterior.
+  #
+  #
+  
+  #===========================================================
+  # Initialise variables
+  #===========================================================
   th     = matrix( 0, nrow=nIter, ncol=1 );
   thp    = matrix( 0, nrow=nIter, ncol=1 );
   ll     = matrix( 0, nrow=nIter, ncol=1 );
@@ -84,9 +110,32 @@ pmh <- function(y,initPar,sigmav,sigmae,nPart,T,xo,nIter,stepSize) {
 # Particle Metropolis-Hastings (SV model)
 ##############################################################################
 
-pmh_sv <- function(y,initPar,nPart,T,nIter,stepSize) {
-  
-  # Initalise variables
+pmh_sv <- function(y,initPar,nPart,T,nIter,stepSize) 
+{
+  #
+  # Particle Metropolis-Hastings (PMH) for the SV model
+  #
+  # Inputs:
+  # y:                   observations from the system for t=1,...,T.
+  #
+  # initPar:             initial values of the parameters
+  #                      ( phi, sigmav, sigmae )
+  #
+  # nPart:               number of particles (N)
+  #
+  # T:                   the no. observations.
+  #
+  # nIter and stepSize:  the number of iterations in PMH and the 
+  #                      standard deviation of the RW proposal.
+  #
+  # Outputs:
+  # th:                  K samples from the parameter posterior.
+  #
+  #
+    
+  #===========================================================
+  # Initialise variables
+  #===========================================================
   xh     = matrix( 0, nrow=nIter, ncol=T+1 );
   xhp    = matrix( 0, nrow=nIter, ncol=T+1 );
   th     = matrix( 0, nrow=nIter, ncol=3  );
