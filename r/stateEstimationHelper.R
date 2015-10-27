@@ -16,7 +16,7 @@
 generateData <- function(phi,sigmav,sigmae,T,xo)
 {
   #
-  # Generates the data from the LGSS model with parameters (phi,sigmav,sigmae)
+  # Generates data from the LGSS model with parameters (phi,sigmav,sigmae)
   #
   # Inputs:
   # phi, sigmav, sigmae: the persistence of the state and the 
@@ -126,7 +126,7 @@ sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
-  list( xh = xhatf, ll=ll);
+  list( xh = xhatf, ll=ll, p=p, w=w);
   
 }
 
@@ -203,9 +203,8 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
   # Inputs:
   # y:                   observations from the system for t=1,...,T.
   #
-  # phi, sigmav, sigmae: the persistence of the state and the 
-  #                      standard deviations of the state innovations and 
-  #                      observation noise.
+  # mu, phi, sigmav:     the mean and persistence of the state and the 
+  #                      standard deviations of the state innovations.
   #
   # nPart:               number of particles (N)
   #
@@ -213,7 +212,7 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
   #
   # Outputs:
   # xh:                  vector with T+1 elements
-  #                      estimates of the filtered state
+  #                      estimates of the smoothed state
   #                      for each t=0,1,...,T.
   #
   # ll:                  estimate of the log-likelihood at T
@@ -223,14 +222,13 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
   #===========================================================
   # Initialise variables
   #===========================================================
-  xhatf = matrix( 0,       nrow=T+1,   ncol=1);
+  a     = matrix( 0,       nrow=nPart, ncol=T+1 );
   p     = matrix( 0,       nrow=nPart, ncol=T+1);
   w     = matrix( 1/nPart, nrow=nPart, ncol=T+1);
   ll    = 0;
   
   # Generate initial state
   p[,1]     = rnorm(nPart, mu, sigmav / sqrt( 1 - phi * phi ) );
-  xhatf[,1] = mean( p[,1] );
   
   #===========================================================
   # Run main loop
@@ -241,6 +239,12 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
     # Resample ( multinomial )
     #=========================================================
     idx = sample(1:nPart, nPart, replace=T, prob = w[,tt-1] );
+    
+    # Resample the ancestory linage
+    a[,1:tt-1]  = a[idx,1:tt-1];
+    
+    # Add the most recent ancestors
+    a[,tt]      = idx;
     
     #=========================================================
     # Propagate
@@ -262,12 +266,14 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
     # Normalize the weights
     w[,tt] = w[,tt] / sum( w[,tt] );
     
-    # Estimate the state
-    xhatf[tt] = sum( w[,tt] * p[,tt] );
-    
   }
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
+
+  # Sample the state estimate using the weights at tt=T
+  nIdx  = sample( 1:nPart, 1, prob=w[,T] )
+  xhatf = p[nIdx,]  
+  
   list( xh = xhatf, ll=ll)
 }
