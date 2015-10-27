@@ -18,9 +18,11 @@ Included files
 
 **example2-lgss.[R,py,m]** Implements the numerical illustration in Section 3.2 of parameter estimation of the parameter phi in the LGSS model using particle Metropolis-Hastings (PMH) with the faPF as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 4.
 
-**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.1 of parameter estimation of the three parameters in the stochastic volatility (SV) model using particle Metropolis-Hastings (PMH) with the bootstrap particle filter (bPF) as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 5.
+**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.1 of parameter estimation of the three parameters in the stochastic volatility (SV) model using particle Metropolis-Hastings (PMH) with the bootstrap particle filter (bPF) as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 5. The code takes some time (hours to execute).
 
-**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7.
+**example4-sv.[R,py,m]** Implements the numerical illustration in Section 4.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7. The code takes some time (hours to execute).
+
+**example*.[RData,mat]** A saved copy of the workspace after running to code.
 
 Supporting files
 --------------

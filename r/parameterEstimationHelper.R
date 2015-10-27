@@ -119,7 +119,7 @@ pmh_sv <- function(y,initPar,nPart,T,nIter,stepSize)
   # y:                   observations from the system for t=1,...,T.
   #
   # initPar:             initial values of the parameters
-  #                      ( phi, sigmav, sigmae )
+  #                      ( mu, phi, sigmav )
   #
   # nPart:               number of particles (N)
   #

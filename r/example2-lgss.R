@@ -69,7 +69,7 @@ res = pmh(data$y,initPar,sigmav,sigmae,nPart,T,x0,nIter,stepSize)
 ##############################################################################
 
 # Export plot to file
-#cairo_pdf("lgss-parameter.pdf", height = 9, width = 8)
+#cairo_pdf("example2-lgss.pdf", height = 10, width = 8)
 
 # Plot the parameter posterior estimate
 # Solid black line indicate posterior mean
@@ -89,6 +89,7 @@ abline(h=mean(res[nBurnIn:nIter]),lwd=1,lty="dotted")
 # Plot the ACF of the Markov chain
 foo=acf( res[nBurnIn:nIter], plot=F)
 plot(foo$lag,foo$acf,col = '#7570B3', type="l",xlab="iteration",ylab="ACF",bty="n",lwd=2)
+polygon(c(foo$lag,rev(foo$lag)),c(foo$acf,rep(0,length(foo$acf))),border=NA,col=rgb(t(col2rgb("#7570B3"))/256,alpha=0.25))
 abline(h=1.96/sqrt(nIter-nBurnIn),lty="dotted")
 abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 

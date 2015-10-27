@@ -45,7 +45,7 @@ x    = data$x
 y    = data$y
 
 # Export plot to file
-#cairo_pdf("lgss-state.pdf", height = 8, width = 8)
+#cairo_pdf("example1-lgss.pdf", height = 10, width = 8)
 
 # Plot the latent state and observations
 layout(matrix(1:3, 3, 1, byrow = TRUE));
