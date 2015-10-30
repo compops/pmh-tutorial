@@ -45,53 +45,46 @@ x    = data$x
 y    = data$y
 
 # Export plot to file
-#cairo_pdf("example1-lgss.pdf", height = 10, width = 8)
+cairo_pdf("example1-lgss.pdf", height = 10, width = 8)
 
 # Plot the latent state and observations
-layout(matrix(1:3, 3, 1, byrow = TRUE));
+layout(matrix(c(1,1,2,2,3,4), 3, 2, byrow = TRUE));
 par(mar=c(4,5,0,0))
 grid = seq(0,T);
 
 plot(grid,y,col="#1B9E77",lwd=1.5,type="l",xlab="time",ylab="observation",bty="n",ylim=c(-6,6))
 polygon(c(grid,rev(grid)),c(y,rep(-7,T+1)),border=NA,col=rgb(t(col2rgb("#1B9E77"))/256,alpha=0.25))
 
-plot(grid,x,col="#D95F02",lwd=1.5,type="l",xlab="time",ylab="latent state",bty="n",ylim=c(-6,6))
-polygon(c(grid,rev(grid)),c(x,rep(-7,T+1)),border=NA,col=rgb(t(col2rgb("#D95F02"))/256,alpha=0.25))
-
 ###################################################################################
-# State estimation using the particle filter
+# State estimation using the particle filter and Kalman filter
 ###################################################################################
-
-grid = seq(0,T-1);
 
 # Using N = 20 particles and plot the estimate of the latent state
 N      <- 20;
 outPF  <- sm(y,phi,sigmav,sigmae,N,T,x0)
-plot(grid,outPF$xh,col="#7570B3",lwd=1.5,type="l",xlab="time",ylab="state estimate",bty="n",ylim=c(-6,6))
-polygon(c(grid,rev(grid)),c(outPF$xh,rep(-7,T)),border=NA,col=rgb(t(col2rgb("#7570B3"))/256,alpha=0.25))
-
-###################################################################################
-# State estimation using the Kalman filter
-###################################################################################
-
 outKF  <- kf(y,phi,sigmav,sigmae,x0,0.01);
-lines( grid, outKF$xh[-(T+1)], col="black", lty="dashed",lwd=1.5)
+diff   <- outPF$xh-outKF$xh[-(T+1)];
 
-#dev.off()
+grid = seq(0,T-1);
+plot(grid,diff,col="#7570B3",lwd=1.5,type="l",xlab="time",ylab="difference in state estimate",bty="n",ylim=c(-0.1,0.1))
+polygon(c(grid,rev(grid)),c(diff,rep(-0.10,T)),border=NA,col=rgb(t(col2rgb("#7570B3"))/256,alpha=0.25))
 
-# Compute bias
-# log( mean( abs(sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-# log( mean( abs(sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-# log( mean( abs(sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-# log( mean( abs(sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)]) ) )
-# log( mean( abs(sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)]) ) )
+# Compute bias and MSE
+logBiasMSE = matrix( 0, nrow=7, ncol=2);
+gridN      = c( 10, 20, 50, 100, 200, 500, 1000);
 
-# Compute MSE
-# log( mean( (sm(y,phi,sigmav,sigmae,10,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-# log( mean( (sm(y,phi,sigmav,sigmae,20,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-# log( mean( (sm(y,phi,sigmav,sigmae,50,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-# log( mean( (sm(y,phi,sigmav,sigmae,100,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
-# log( mean( (sm(y,phi,sigmav,sigmae,200,T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+for ( ii in 1:length(gridN) ) {
+  logBiasMSE[ ii, 1 ] = log( mean( abs(sm(y,phi,sigmav,sigmae,gridN[ii],T,x0)$xh-outKF$xh[-(T+1)]) ) )  
+  logBiasMSE[ ii, 2 ] = log( mean( (sm(y,phi,sigmav,sigmae,gridN[ii],T,x0)$xh-outKF$xh[-(T+1)])^2 ) )
+}
+
+# Plot the bias and MSE for comparison
+plot(   gridN,logBiasMSE[ , 1 ],col="#E7298A",lwd=1.5,type="l",xlab="no. particles (N)",ylab="log-bias",bty="n",ylim=c(-7,-3))
+points( gridN,logBiasMSE[ , 1 ],col="#E7298A",pch=19)
+plot(   gridN,logBiasMSE[ , 2 ],col="#66A61E",lwd=1.5,type="l",xlab="no. particles (N)",ylab="log-MSE",bty="n",ylim=c(-12,-6))
+points( gridN,logBiasMSE[ , 2 ],col="#66A61E",pch=19)
+
+dev.off()
 
 ###################################################################################
 # End of file
