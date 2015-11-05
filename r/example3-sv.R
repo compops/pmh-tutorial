@@ -66,9 +66,9 @@ resTh = res$thhat[ nBurnIn:nIter, ];
 resXh = res$xhat[ nBurnIn:nIter, ];
 
 # Estimate the KDE of the marginal posteriors
-foo1  = density( resTh[ , 1], kernel = "e", from = -1, to = 1 );
-foo2  = density( resTh[ , 2], kernel = "e", to = 1 );
-foo3  = density( resTh[ , 3], kernel = "e", from = 0 );
+kde1  = density( resTh[ , 1], kernel = "e", from = -1, to = 1 );
+kde2  = density( resTh[ , 2], kernel = "e", to = 1 );
+kde3  = density( resTh[ , 3], kernel = "e", from = 0 );
 
 # Estimate the posterior mean and the corresponding standard deviation
 thhat   = colMeans( resTh );
@@ -101,7 +101,7 @@ grid  = seq( nBurnIn, nBurnIn+nPlot-1, 1 );
 # Mu
 hist( resTh[,1], breaks = floor( sqrt( nIter - nBurnIn ) ), col = rgb( t( col2rgb( "#7570B3" ) ) / 256, alpha = 0.25 ),border=NA,xlab=expression(mu),ylab="posterior estimate",main="",xlim=c(-1,1),freq=F)
 lines( seq(-1,1,0.01), dnorm(seq(-1,1,0.01),0,1),col="darkgrey")
-lines( foo1, lwd=2,col="#7570B3"); abline(v=thhat[1],lwd=1,lty="dotted");
+lines( kde1, lwd=2,col="#7570B3"); abline(v=thhat[1],lwd=1,lty="dotted");
 
 plot(grid,resTh[1:nPlot,1],col='#7570B3', type="l",xlab="iteration",ylab=expression(mu),bty="n",ylim=c(-1,1),xlim=c(2500,4000))
 polygon(c(grid,rev(grid)),c(resTh[1:nPlot,1],rep(-1,length(resTh[1:nPlot,1]))),border=NA,col=rgb(t(col2rgb("#7570B3"))/256,alpha=0.25))
@@ -116,7 +116,7 @@ abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 # Phi
 hist(resTh[,2], breaks=floor(sqrt(nIter-nBurnIn)), col=rgb(t(col2rgb("#E7298A"))/256,alpha=0.25),border=NA,xlab=expression(phi),ylab="posterior estimate",main="",xlim=c(0.88,1.0),freq=F)
 lines(seq(0.88,1,0.01),dnorm(seq(0.88,1,0.01),0.95,0.05),col="darkgrey")
-lines(foo2,lwd=2,col="#E7298A"); abline(v=thhat[2],lwd=1,lty="dotted");
+lines(kde2,lwd=2,col="#E7298A"); abline(v=thhat[2],lwd=1,lty="dotted");
 
 plot(grid,resTh[1:nPlot,2],col='#E7298A', type="l",xlab="iteration",ylab=expression(phi),bty="n",ylim=c(0.9,1.1),xlim=c(2500,4000))
 polygon(c(grid,rev(grid)),c(resTh[1:nPlot,2],rep(0.9,length(resTh[1:nPlot,2]))),border=NA,col=rgb(t(col2rgb("#E7298A"))/256,alpha=0.25))
@@ -131,7 +131,7 @@ abline(h=-1.96/sqrt(nIter-nBurnIn),lty="dotted")
 # Sigma[v]
 hist(resTh[,3], breaks=floor(sqrt(nIter-nBurnIn)), col=rgb(t(col2rgb("#66A61E"))/256,alpha=0.25),border=NA,xlab=expression(sigma[v]),ylab="posterior estimate",main="",xlim=c(0.0,0.4),freq=F)
 lines(seq(0,0.4,0.01),dgamma(seq(0,0.4,0.01),2,10),col="darkgrey")
-lines(foo3,lwd=2,col="#66A61E"); abline(v=thhat[3],lwd=1,lty="dotted");
+lines(kde3,lwd=2,col="#66A61E"); abline(v=thhat[3],lwd=1,lty="dotted");
 
 plot(grid,resTh[1:nPlot,3],col='#66A61E', type="l",xlab="iteration",ylab=expression(sigma[v]),bty="n",ylim=c(0.0,0.4),xlim=c(2500,4000))
 polygon(c(grid,rev(grid)),c(resTh[1:nPlot,3],rep(0,length(resTh[1:nPlot,3]))),border=NA,col=rgb(t(col2rgb("#66A61E"))/256,alpha=0.25))

@@ -1,8 +1,33 @@
 import numpy as np
+from scipy.stats import gamma
+from scipy.stats import norm
 
 #############################################################################
-# PMH routine (LGSS)
+# Particle Metropolis-Hastings (PMH) for the LGSS model
+#
+# Inputs:
+# y:                   observations from the system for t=1,...,T.
+#
+# initPar:             initial value for phi (persistence of the state)
+#
+# par:                 the standard deviations of the state noise par[1]
+#                      and observation noise par[2].
+#
+# nPart:               number of particles (N)
+#
+# T and xo:            the no. observations and initial state.
+#
+# sm:                  function for estimating the likelihood
+#
+# nIter and stepSize:  the number of iterations in PMH and the
+#                      standard deviation of the RW proposal.
+#
+# Outputs:
+# th:                  K samples from the parameter posterior.
+#
+#
 #############################################################################
+
 def pmh(y,initPar,par,nPart,T,xo,sm,nIter,stepSize):
 
     # Initalise variables
@@ -24,20 +49,19 @@ def pmh(y,initPar,par,nPart,T,xo,sm,nIter,stepSize):
         # Propose a new parameter
         thp[kk] = th[kk-1] + stepSize * np.random.randn();
 
-        # Estimate the log-likelihood
-        ( xhat, llp[kk] ) = sm(y,(thp[kk],par[1],par[2]),nPart,T,xo);
-
-        # Compute the acceptance probability
-        aprob = np.min( (1.0, np.exp( llp[kk] - ll[kk-1] ) ) );
-
-        # Generate uniform random variable in U[0,1]
-        u = np.random.uniform()
-
-        # Check if | par[0] | > 1.0, in that case set u = 1.0;
-        # So that the parameter is rejected. This is due to that the model
+        # Check if | par[0] | > 1.0, in that case reject the parameter.
+        # This is due to that the model
         # is only stable when | par[0] | is smaller than 1
-        if ( np.abs( thp[kk] ) > 1.0 ):
-            u = 1.0;
+        if ( np.abs( thp[kk] ) < 1.0 ):
+
+            # Estimate the log-likelihood
+            ( xhat, llp[kk] ) = sm(y,(thp[kk],par[1],par[2]),nPart,T,xo);
+
+            # Compute the acceptance probability
+            aprob = np.min( (1.0, np.exp( llp[kk] - ll[kk-1] ) ) );
+
+            # Generate uniform random variable in U[0,1]
+            u = np.random.uniform()
 
         # Accept / reject step
         if ( u < aprob ):
@@ -67,8 +91,30 @@ def pmh(y,initPar,par,nPart,T,xo,sm,nIter,stepSize):
     return th;
 
 #############################################################################
-# PMH routine (SV model)
+# Particle Metropolis-Hastings (PMH) for the SV model
+#
+# Inputs:
+# y:                   observations from the system for t=1,...,T.
+#
+# initPar:             initial values for the parameters (mu,phi,sigmav)
+#
+#
+# nPart:               number of particles (N)
+#
+# T and xo:            the no. observations and initial state.
+#
+# sm:                  function for estimating the likelihood
+#
+# nIter and stepSize:  the number of iterations in PMH and the
+#                      standard deviation of the RW proposal.
+#
+# Outputs:
+# x:                   Estimate of the log-volatility
+# th:                  K samples from the parameter posterior.
+#
+#
 #############################################################################
+
 def pmh_sv(y,initPar,nPart,T,sm,nIter,stepSize):
 
     # Initalise variables
@@ -76,11 +122,13 @@ def pmh_sv(y,initPar,nPart,T,sm,nIter,stepSize):
     thp    = np.zeros((nIter,3));
     ll     = np.zeros(nIter);
     llp    = np.zeros(nIter);
+    x      = np.zeros((nIter,T));
+    xp     = np.zeros((nIter,T));
     accept = np.zeros(nIter);
 
     # Set the initial parameter and estimate the initial log-likelihood
     th[0,:]         = initPar;
-    ( xhat, ll[0] ) = sm(y,th[0,:],nPart,T);
+    ( x[0,:], ll[0] ) = sm(y,th[0,:],nPart,T);
 
     #=====================================================================
     # Run main loop
@@ -88,15 +136,20 @@ def pmh_sv(y,initPar,nPart,T,sm,nIter,stepSize):
     for kk in range(1, nIter):
 
         # Propose a new parameter
-        thp[kk,:] = th[kk-1,:] + stepSize * np.random.normal( size=3 );
+        thp[kk,:] = th[kk-1,:] + np.random.multivariate_normal( mean=np.zeros(3), cov=stepSize );
 
         # Estimate the log-likelihood
         # Dont run if system is unstable
-        if ( ( np.abs( thp[kk,0] ) < 1.0 ) & ( thp[kk,1] > 0.0 ) & ( thp[kk,2] > 0.0 ) ):
-            ( xhat, llp[kk] ) = sm(y,thp[kk,:],nPart,T);
+        if ( ( np.abs( thp[kk,1] ) < 1.0 ) & ( thp[kk,2] > 0.0 ) ):
+            ( xp[kk,:], llp[kk] ) = sm(y,thp[kk,:],nPart,T);
+
+        # Compute the ratio between the prior distributions (in log-form)
+        prior =  norm.logpdf(  thp[kk,0], 0, 1)       - norm.logpdf(  th[kk-1,0], 0, 1);
+        prior += norm.logpdf(  thp[kk,1], 0.95, 0.05) - norm.logpdf(  th[kk-1,1], 0.95, 0.05)
+        prior += gamma.logpdf( thp[kk,2], 2, 1.0/10.0)- gamma.logpdf( th[kk-1,2], 2, 1.0/10.0);
 
         # Compute the acceptance probability
-        aprob = np.min( (1.0, np.exp( llp[kk] - ll[kk-1] ) ) );
+        aprob = np.min( (1.0, np.exp( prior + llp[kk] - ll[kk-1] ) ) );
 
         # Generate uniform random variable in U[0,1]
         u = np.random.uniform()
@@ -106,18 +159,20 @@ def pmh_sv(y,initPar,nPart,T,sm,nIter,stepSize):
         # Check if par[2] < 0.0, in that case set u = 1.0;
         # So that the parameter is rejected. This is due to that the model
         # is only stable when | par[0] | is smaller than 1
-        if ( ( np.abs( thp[kk,0] ) > 1.0 ) | ( thp[kk,1] < 0.0 ) | ( thp[kk,2] < 0.0 ) ):
+        if ( ( np.abs( thp[kk,1] ) > 1.0 ) | ( thp[kk,2] < 0.0 ) ):
             u = 1.0;
 
         # Accept / reject step
         if ( u < aprob ):
             # Accept the parameter
             th[kk,:]   = thp[kk,:]
+            x[kk,:]    = xp[kk,:]
             ll[kk]     = llp[kk]
             accept[kk] = 1.0;
         else:
             # Reject the parameter
             th[kk,:]   = th[kk-1,:]
+            x[kk,:]    = x[kk-1,:]
             ll[kk]     = ll[kk-1]
             accept[kk] = 0.0;
 
@@ -134,4 +189,4 @@ def pmh_sv(y,initPar,nPart,T,sm,nIter,stepSize):
     #=====================================================================
     # Return traces of the parameters
     #=====================================================================
-    return th;
+    return ( x, th );
