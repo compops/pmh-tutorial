@@ -84,6 +84,7 @@ sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
   xhatf = matrix( x0,      nrow=T,     ncol=1   );
   p     = matrix( x0,      nrow=nPart, ncol=T+1 );
   w     = matrix( 1/nPart, nrow=nPart, ncol=T+1 );
+  v     = matrix( 1      , nrow=nPart, ncol=T+1 );
   ll    = 0;
 
   #===========================================================
@@ -106,20 +107,20 @@ sm <- function(y,phi,sigmav,sigmae,nPart,T,x0)
     #=========================================================
     # Compute weights
     #=========================================================
-    w[,tt] = dnorm( y[tt+1], phi * p[,tt], sqrt( sigmae^2 + sigmav^2), log=T );
+    v[,tt] = dnorm( y[tt+1], phi * p[,tt], sqrt( sigmae^2 + sigmav^2), log=T );
     
     # Rescale log-weights and recover weight
-    wmax   = max( w[,tt] );
-    w[,tt] = exp( w[,tt] - wmax );
-    
-    # Estimate the log-likelihood
-    ll     = ll + wmax + log( sum(w[,tt]) ) - log(nPart);
+    vmax   = max( v[,tt] );
+    v[,tt] = exp( v[,tt] - vmax );
     
     # Normalize the weights
-    w[,tt] = w[,tt] / sum( w[,tt] );
-    
+    w[,tt] = v[,tt] / sum( v[,tt] );
+        
     # Estimate the state
     xhatf[tt] = mean( p[,tt] );
+    
+    # Estimate the log-likelihood
+    ll     = ll + vmax + log( sum(v[,tt]) ) - log(nPart);    
     
   }
   
@@ -225,10 +226,12 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
   a     = matrix( 0,       nrow=nPart, ncol=T+1 );
   p     = matrix( 0,       nrow=nPart, ncol=T+1);
   w     = matrix( 1/nPart, nrow=nPart, ncol=T+1);
+  v     = matrix( 1      , nrow=nPart, ncol=T+1 );
   ll    = 0;
   
   # Generate initial state
   p[,1]     = rnorm(nPart, mu, sigmav / sqrt( 1 - phi * phi ) );
+  a[,1]     = 1:N;
   
   #===========================================================
   # Run main loop
@@ -254,17 +257,17 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
     #=========================================================
     # Compute weights
     #=========================================================
-    w[,tt] = dnorm( y[tt-1], 0, exp( p[,tt] / 2 ), log=T);
+    v[,tt] = dnorm( y[tt-1], 0, exp( p[,tt] / 2 ), log=T);
     
     # Rescale log-weights and recover weight
-    wmax   = max(w[,tt]);
-    w[,tt] = exp(w[,tt] - wmax);
-    
-    # Estimate the log-likelihood
-    ll     = ll + wmax + log(sum(w[,tt])) - log(nPart);
+    vmax   = max(v[,tt]);
+    v[,tt] = exp(v[,tt] - vmax);
     
     # Normalize the weights
-    w[,tt] = w[,tt] / sum( w[,tt] );
+    w[,tt] = v[,tt] / sum( v[,tt] );
+    
+    # Estimate the log-likelihood
+    ll     = ll + vmax + log( sum(v[,tt]) ) - log(nPart);    
     
   }
   #===========================================================
@@ -273,7 +276,7 @@ sm_sv <- function(y,mu,phi,sigmav,N,T)
 
   # Sample the state estimate using the weights at tt=T
   nIdx  = sample( 1:nPart, 1, prob=w[,T] )
-  xhatf = p[nIdx,]  
+  xhatf = p[ cbind( a[ nIdx, ] , 1:(T+1) ) ]  
   
   list( xh = xhatf, ll=ll)
 }

@@ -29,13 +29,14 @@
 function[xhatf,llp] = sm_sv(y,mu,phi,sigmav,N,T)
 
   % Initalise variables
-  xhatf = zeros( T+1, 1);
+  a     = zeros( N, T+1);
   p     = zeros( N, T+1);
+  v     = ones(  N, T+1);
   w     = ones(  N, T+1) / N;
   llp   = 0;
   
+  a(:,1)   = 1:N;
   p(:,1)   = mu + sigmav/sqrt(1-phi^2) * normrnd( 0, 1, N, 1 ) ;
-  xhatf(1) = mean(p(:,1));
 
   %===========================================================
   % Run main loop
@@ -48,6 +49,12 @@ function[xhatf,llp] = sm_sv(y,mu,phi,sigmav,N,T)
     idx = randsample( N, N, true, w(:,tt-1) ); 
     idx = idx( randperm( N ) );
     
+    % Resample the ancestory linage
+    a(:,1:tt-1) = a(idx,1:tt-1);
+    
+    % Add the most recent ancestors
+    a(:,tt)     = idx;    
+    
     %=========================================================
     % Propagate
     %=========================================================
@@ -56,23 +63,24 @@ function[xhatf,llp] = sm_sv(y,mu,phi,sigmav,N,T)
     %=========================================================
     % Compute weights
     %=========================================================
-    w(:,tt) = dnorm( y(tt-1), 0, exp(p(:,tt)/2) );
+    v(:,tt) = dnorm( y(tt-1), 0, exp(p(:,tt)/2) );
     
     % Rescale log-weights and recover weight
-    wmax    = max( w(:,tt) );
-    w(:,tt) = exp( w(:,tt) - wmax );
+    vmax    = max( v(:,tt) );
+    v(:,tt) = exp( v(:,tt) - vmax );
     
     % Estimate the log-likelihood
-    llp    = llp + wmax + log(sum( w(:,tt) )) - log(N);
+    llp    = llp + vmax + log(sum( v(:,tt) )) - log(N);
     
     % Normalize the weights
-    w(:,tt) = w(:,tt) / sum( w(:,tt) );
-    
-    % Estimate the state
-    xhatf(tt) = sum( w(:,tt) .* p(:,tt) );
+    w(:,tt) = v(:,tt) / sum( v(:,tt) );
     
   end
   
+  % Sample the state estimate using the weights at tt=T
+  nIdx  = randsample( N, 1, true, w(:,T) );
+  indices = sub2ind(size(p), a(nIdx,:), 1:(T+1));
+  xhatf = p( indices );
 end
 
 % Helper for computing the logarithm of the Gaussian density

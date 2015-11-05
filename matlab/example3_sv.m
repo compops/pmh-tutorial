@@ -65,7 +65,7 @@ hold on; plot(mean(xhhat(nBurnIn:nRuns,2:(T+1)),1),'LineWidth',1,'Color',[217 95
 % Solid black line indicate posterior mean
 subplot(4,2,3);
 hist(thhat(nBurnIn:nRuns,1), floor(sqrt(nRuns-nBurnIn)) );
-xlabel('phi'); ylabel('posterior density estimate');
+xlabel('mu'); ylabel('posterior density estimate');
 
 h = findobj(gca,'Type','patch');
 set(h,'FaceColor',[117 112 179]/256,'EdgeColor','w');
@@ -74,11 +74,11 @@ hold on; plot([1 1] * mean(thhat(nBurnIn:nRuns,1)), [0 500], 'k'); hold off;
 subplot(4,2,4);
 plot(nBurnIn:nRuns,thhat(nBurnIn:nRuns,1), 'Color', [117 112 179]/256);
 hold on; plot([nBurnIn nRuns],[1 1] * mean(thhat(nBurnIn:nRuns,1)), 'k'); hold off;
-xlabel('iteration'); ylabel('trace of phi');
+xlabel('iteration'); ylabel('trace of mu');
 
 subplot(4,2,5);
 hist(thhat(nBurnIn:nRuns,2), floor(sqrt(nRuns-nBurnIn)) );
-xlabel('sigmav'); ylabel('posterior density estimate');
+xlabel('phi'); ylabel('posterior density estimate');
 
 h = findobj(gca,'Type','patch');
 set(h,'FaceColor',[231 41 138]/256,'EdgeColor','w');
@@ -86,12 +86,12 @@ hold on; plot([1 1] * mean(thhat(nBurnIn:nRuns,2)), [0 500], 'k'); hold off;
 
 subplot(4,2,6);
 plot(nBurnIn:nRuns,thhat(nBurnIn:nRuns,2), 'Color', [231 41 138]/256);
-xlabel('iteration'); ylabel('trace of sigmav');
+xlabel('iteration'); ylabel('trace of phi');
 hold on; plot([nBurnIn nRuns],[1 1] * mean(thhat(nBurnIn:nRuns,2)), 'k'); hold off;
 
 subplot(4,2,7);
 hist(thhat(nBurnIn:nRuns,3), floor(sqrt(nRuns-nBurnIn)) );
-xlabel('beta'); ylabel('posterior density estimate');
+xlabel('sigmav'); ylabel('posterior density estimate');
 
 h = findobj(gca,'Type','patch');
 set(h,'FaceColor',[102 166 30]/256,'EdgeColor','w');
@@ -100,7 +100,7 @@ hold on; plot([1 1] * mean(thhat(nBurnIn:nRuns,3)), [0 500], 'k'); hold off;
 subplot(4,2,8);
 plot(nBurnIn:nRuns,thhat(nBurnIn:nRuns,3), 'Color', [102 166 30]/256);
 hold on; plot([nBurnIn nRuns],[1 1] * mean(thhat(nBurnIn:nRuns,3)), 'k'); hold off;
-xlabel('iteration'); ylabel('trace of beta');
+xlabel('iteration'); ylabel('trace of sigmav');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End of file

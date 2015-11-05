@@ -2,9 +2,9 @@
 
 This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://users.isy.liu.se/en/rt/johda87/ > and contains the code used to produce the results in the tutorial
 
-* J. Dahlin and T. B. Schön, *Getting started with particle Metropolis-Hastings for inference in nonlinear models*. Pre-print, arXiv:1510:xxxxv1, 2015. 
+* J. Dahlin and T. B. Schön, *Getting started with particle Metropolis-Hastings for inference in nonlinear models*. Pre-print, arXiv:1511:xxxxv1, 2015. 
 
-The papers are available as a preprint from < http://arxiv.org/pdf/1510.xxxxv1 > and < http://users.isy.liu.se/en/rt/johda87/ >.
+The papers are available as a preprint from < http://arxiv.org/pdf/1511.xxxxv1 > and < http://users.isy.liu.se/en/rt/johda87/ >.
 
 Requirements
 --------------
@@ -22,14 +22,14 @@ Included files
 
 **example4-sv.[R,py,m]** Implements the numerical illustration in Section 4.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7. The code takes some time (hours to execute).
 
-**example*.[RData,mat]** A saved copy of the workspace after running to code.
+**example*.[RData,mat,spdata]** A saved copy of the workspace after running thr corresponding code. Can be used to directly recreate the plots in the tutorial and to conduct additional analysis.
 
 Supporting files
 --------------
-**stateEstimationHelper.[py,m]**
+**stateEstimationHelper.[py,R]**
 Implementes the data generation for the LGSS model (generateData), the faPF for the LGSS model (sm), the Kalman filter for the LGSS model (kf) and the bPF for the SV model (sm_sv). In Matlab, these functions are defined in four seperate m-files with the corresponding file names.
 
-**parameterEstimationHelper.[py,m]**
+**parameterEstimationHelper.[py,R]**
 Implementes the PMH algorithm for the LGSS model (pmh) and the SV model (pmh_sv). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
 
 **omxs30data.csv**
