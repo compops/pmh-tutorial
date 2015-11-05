@@ -10,7 +10,7 @@ Requirements
 --------------
 The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7. 
 
-The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use ofNumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
+The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
 
 Included files
 --------------
