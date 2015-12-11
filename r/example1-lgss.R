@@ -3,8 +3,19 @@
 # Example of fully-adapted particle filtering 
 # in a linear Gaussian state space model
 #
-# (c) 2015 Johan Dahlin
-# johan.dahlin (at) liu.se
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 ##############################################################################
 
@@ -81,8 +92,11 @@ for ( ii in 1:length(gridN) ) {
 # Plot the bias and MSE for comparison
 plot(   gridN,logBiasMSE[ , 1 ],col="#E7298A",lwd=1.5,type="l",xlab="no. particles (N)",ylab="log-bias",bty="n",ylim=c(-7,-3))
 points( gridN,logBiasMSE[ , 1 ],col="#E7298A",pch=19)
+polygon(c(gridN,rev(gridN)),c(logBiasMSE[ , 1 ],rep(-7,length(gridN))),border=NA,col=rgb(t(col2rgb("#E7298A"))/256,alpha=0.25))
+
 plot(   gridN,logBiasMSE[ , 2 ],col="#66A61E",lwd=1.5,type="l",xlab="no. particles (N)",ylab="log-MSE",bty="n",ylim=c(-12,-6))
 points( gridN,logBiasMSE[ , 2 ],col="#66A61E",pch=19)
+polygon(c(gridN,rev(gridN)),c(logBiasMSE[ , 2 ],rep(-12,length(gridN))),border=NA,col=rgb(t(col2rgb("#66A61E"))/256,alpha=0.25))
 
 dev.off()
 
