@@ -14,13 +14,15 @@ The implementation in R makes use of the package mvtnorm. It can be installed by
 
 Included files
 --------------
-**example1-lgss.[R,py,m]** Implements the numerical illustration in Section 2.2 of state estimation in a linear Gaussian state space (LGSS) model using the fully-adapted particle filter (faPF). The output is the filtered state estimated as presented in Figure 3.
+**example1-lgss.[R,py,m]** Implements the numerical illustration in Section 3.2 of state estimation in a linear Gaussian state space (LGSS) model using the fully-adapted particle filter (faPF). The output is the filtered state estimated as presented in Figure 3.
 
-**example2-lgss.[R,py,m]** Implements the numerical illustration in Section 3.2 of parameter estimation of the parameter phi in the LGSS model using particle Metropolis-Hastings (PMH) with the faPF as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 4.
+**example2-lgss.[R,py,m]** Implements the numerical illustration in Section 3.4 of parameter estimation of the parameter phi in the LGSS model using particle Metropolis-Hastings (PMH) with the faPF as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 4.
 
-**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4.1 of parameter estimation of the three parameters in the stochastic volatility (SV) model using particle Metropolis-Hastings (PMH) with the bootstrap particle filter (bPF) as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 5. The code takes some time (hours to execute).
+**example3-sv.[R,py,m]** Implements the numerical illustration in Section 4 of parameter estimation of the three parameters in the stochastic volatility (SV) model using particle Metropolis-Hastings (PMH) with the bootstrap particle filter (bPF) as the likelihood estimator. The output is the estimated parameter posterior as presented in Figure 5. The code takes some time (hours to execute).
 
-**example4-sv.[R,py,m]** Implements the numerical illustration in Section 4.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7. The code takes some time (hours to execute).
+**example4-sv.[R,py,m]** Implements the numerical illustration in Section 5.3.1, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7. The code takes some time (hours to execute).
+
+**example5-sv.[R]** Implements the numerical illustration in Section 5.3.2, which makes use of the same setup as in Section 4.1 but with a tuned proposal distribution. The output is the estimated ACF and IACT as presented in Figure 7. The code takes some time (hours to execute).
 
 **example*.[RData,mat,spdata]** A saved copy of the workspace after running thr corresponding code. Can be used to directly recreate the plots in the tutorial and to conduct additional analysis.
 
@@ -30,7 +32,7 @@ Supporting files
 Implementes the data generation for the LGSS model (generateData), the faPF for the LGSS model (sm), the Kalman filter for the LGSS model (kf) and the bPF for the SV model (sm_sv). In Matlab, these functions are defined in four seperate m-files with the corresponding file names.
 
 **parameterEstimationHelper.[py,R]**
-Implementes the PMH algorithm for the LGSS model (pmh) and the SV model (pmh_sv). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
+Implementes the PMH algorithm for the LGSS model (pmh), the SV model (pmh_sv) and the reparameterised SV model (pmh_sv_reparametrised). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
 
 **omxs30data.csv**
 Scaled log-returns calculated using the closing prices of the NASDAQ OMXS30 index during the period January 2, 2012 and January 2, 2014. The data is collected from Quandl: https://www.quandl.com/data/NASDAQOMX/OMXS30.
