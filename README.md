@@ -1,16 +1,16 @@
 # pmh-tutorial
 
-This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://users.isy.liu.se/en/rt/johda87/ > and contains the code used to produce the results in the tutorial
+This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://liu.johandahlin.com/ > and contains the code used to produce the results in the tutorial
 
-* J. Dahlin and T. B. Schön, *Getting started with particle Metropolis-Hastings for inference in nonlinear models*. Pre-print, arXiv:1511:xxxxv1, 2015. 
+* J. Dahlin and T. B. Schön, *Getting started with particle Metropolis-Hastings for inference in nonlinear models*. Pre-print, arXiv:1511:01707, 2015. 
 
-The papers are available as a preprint from < http://arxiv.org/pdf/1511.xxxxv1 > and < http://users.isy.liu.se/en/rt/johda87/ >.
+The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 > and < http://liu.johandahlin.com/ >.
 
 Requirements
 --------------
 The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7. 
 
-The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use ofNumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
+The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
 
 Included files
 --------------
