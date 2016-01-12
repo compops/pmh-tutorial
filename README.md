@@ -10,7 +10,11 @@ Requirements
 --------------
 The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7. 
 
-The implementation in R makes use of the package mvtnorm. It can be installed by the command "install.packages("mvtnorm")". The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". The implementation in Matlab only makes use of the statistics toolbox.
+The implementation in R makes use of the packages Quandl and mvtnorm. They can be installed by the command "install.packages(c("mvtnorm","Quandl"))". 
+
+The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas and Quandl. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". See < https://www.quandl.com/tools/python > for more information.
+
+The implementation in Matlab makes use of the statistics toolbox and the Quandl package. See < https://github.com/quandl/Matlab > for more installation and to download the toolbox. Note that urlread2 is required by the Quandl toolbox and should be installed as detailed in the README file of the Quandl toolbox.
 
 Included files
 --------------
@@ -33,6 +37,3 @@ Implementes the data generation for the LGSS model (generateData), the faPF for 
 
 **parameterEstimationHelper.[py,R]**
 Implementes the PMH algorithm for the LGSS model (pmh), the SV model (pmh_sv) and the reparameterised SV model (pmh_sv_reparametrised). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
-
-**omxs30data.csv**
-Scaled log-returns calculated using the closing prices of the NASDAQ OMXS30 index during the period January 2, 2012 and January 2, 2014. The data is collected from Quandl: https://www.quandl.com/data/NASDAQOMX/OMXS30.
