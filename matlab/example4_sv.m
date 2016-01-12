@@ -41,7 +41,8 @@ x0     = 0;
 % Load data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-y = load('omxs30data.csv');
+d = Quandl.get('NASDAQOMX/OMXS30', 'start_date','2012-01-02','end_date','2014-01-02','type','data'); 
+y = 100 * diff( log( flipud( d(:,2) ) ) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameter estimation using PMH
