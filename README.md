@@ -8,7 +8,7 @@ The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 > 
 
 Requirements
 --------------
-The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7. 
+The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7 with some additional libraries/packages (see below).
 
 The implementation in R makes use of the packages Quandl and mvtnorm. They can be installed by the command "install.packages(c("mvtnorm","Quandl"))". 
 
