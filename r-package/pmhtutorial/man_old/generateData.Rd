@@ -1,0 +1,54 @@
+\name{generateData}
+\alias{generateData}
+\title{
+Generates data from a linear Gaussian state space model
+}
+\description{
+Generates data from a specific linear Gaussian state space model of the form 
+\eqn{ x_{t} = \phi x_{t-1} + \sigma_v v_t } and \eqn{ y_t = x_t + \sigma_e e_t }, where 
+\eqn{v_t} and \eqn{e_t} denote independent standard Gaussian random variables, i.e.
+\eqn{N(0,1)}.
+}
+\usage{
+generateData(phi, sigmav, sigmae, T, x0)
+}
+\arguments{
+  \item{phi}{
+The parameter \eqn{\phi} that scales the current state in the state dynamics.
+It is restricted to [-1,1] to obtain a stable model.
+}
+  \item{sigmav}{
+The standard deviation of the state process noise. Must be positive.
+}
+  \item{sigmae}{
+The standard deviation of the observation process noise. Must be positive.
+}
+  \item{T}{
+The number of time points to simulate.
+}
+  \item{x0}{
+The value of the initial state.
+}
+}
+\value{
+\item{x}{The latent state for \eqn{t=0,...,T}.}
+\item{y}{The observation for \eqn{t=0,...,T}.}
+}
+\references{
+Dahlin, J. & Schoen, T. B. "Getting started with particle Metropolis-Hastings for 
+inference in nonlinear dynamical models." pre-print, arXiv:1511.01707, 2015.
+}
+\author{
+Johan Dahlin <johan.dahlin@liu.se>
+}
+\note{
+See Section 4 in the reference above for more details.
+}
+
+\examples{
+## Generates T=500 observations from a linear state space model with
+## ( phi, sigma_e, sigma_v ) = ( 0.5, 1.0, 0.1 ) and zero initial state.
+
+d <- generateData(phi=0.5, sigmae=1.0, sigmav=0.1, T=500, x0=0.0) 
+}
+\keyword{datagen}
