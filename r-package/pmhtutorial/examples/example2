@@ -1,0 +1,13 @@
+\dontrun{
+# Use a short run when testing the code on CRAN
+# Set nIter manually if running on local computer
+# nIter=1000 is usually enough
+if(nchar(Sys.getenv("LONG_TEST")) != 0) {
+  nIter=7500
+} else {
+  nIter=100
+}
+ 
+# Run the example script
+example2_lgss(nIter=100) 
+}

@@ -16,7 +16,7 @@ The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 
 
 The implementation in Matlab makes use of the statistics toolbox and the Quandl package. See < https://github.com/quandl/Matlab > for more installation and to download the toolbox. Note that urlread2 is required by the Quandl toolbox and should be installed as detailed in the README file of the Quandl toolbox.
 
-Included files
+Included files (folders matlab, python and r)
 --------------
 **example1-lgss.[R,py,m]** Implements the numerical illustration in Section 3.2 of state estimation in a linear Gaussian state space (LGSS) model using the fully-adapted particle filter (faPF). The output is the filtered state estimated as presented in Figure 3.
 
@@ -30,10 +30,20 @@ Included files
 
 **example*.[RData,mat,spdata]** A saved copy of the workspace after running thr corresponding code. Can be used to directly recreate the plots in the tutorial and to conduct additional analysis.
 
-Supporting files
+Supporting files (folders matlab, python and r)
 --------------
 **stateEstimationHelper.[py,R]**
 Implementes the data generation for the LGSS model (generateData), the faPF for the LGSS model (sm), the Kalman filter for the LGSS model (kf) and the bPF for the SV model (sm_sv). In Matlab, these functions are defined in four seperate m-files with the corresponding file names.
 
 **parameterEstimationHelper.[py,R]**
 Implementes the PMH algorithm for the LGSS model (pmh), the SV model (pmh_sv) and the reparameterised SV model (pmh_sv_reparametrised). In Matlab, these functions are defined in two seperate m-files with the corresponding file names.
+
+Included files (folder r-package)
+--------------
+The files for the R package pmhtutorial. These should be virtually the same as the files in the folder r but packaged as an R package. The folder r is maintained to keep the code for the three languages as similar as possible. However, the r package is simple to download and use directly.
+
+Included files (folder matlab-skeleton)
+--------------
+Skeleton code files for MATLAB to help step-by-step implementation during courses and seminars. 
+
+

@@ -1,0 +1,21 @@
+Package: pmhtutorial
+Type: Package
+Title: Minimal Working Examples for Particle Metropolis-Hastings
+Version: 1.0
+Date: 2016-01-12
+Author: Johan Dahlin <johan.dahlin@liu.se>
+Maintainer: Johan Dahlin <johan.dahlin@liu.se>
+URL: https://github.com/compops/pmh-tutorial
+Description: Routines for state estimate in a linear
+    Gaussian state space model and a simple stochastic volatility model using
+    particle filtering. Parameter inference is also carried out in these models
+    using the particle Metropolis-Hastings algorithm that includes the particle
+    filter to provided an unbiased estimator of the likelihood. The code is developed
+    in the paper and all the details are explained there. This package is meant as a
+    minimal working example of these algorithm and is only meant for educational use
+    and as a start for learning to implement these algorithms on your own.
+License: GPL-2
+Imports:
+    mvtnorm,
+    Quandl
+RoxygenNote: 5.0.1
