@@ -62,7 +62,6 @@ function[xhatf,llp] = sm(y,phi,sigmav,sigmae,nPart,T,x0)
     % Resample ( multinomial )
     %=========================================================
     idx = randsample( nPart, nPart, true, w(:,tt-1) ); 
-    idx = idx( randperm( nPart ) );
     
     %=========================================================
     % Propagate

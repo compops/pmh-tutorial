@@ -60,7 +60,6 @@ function[xhatf,llp] = sm_sv(y,mu,phi,sigmav,N,T)
     % Resample ( multinomial )
     %=========================================================
     idx = randsample( N, N, true, w(:,tt-1) ); 
-    idx = idx( randperm( N ) );
     
     % Resample the ancestory linage
     a(:,1:tt-1) = a(idx,1:tt-1);
@@ -91,9 +90,11 @@ function[xhatf,llp] = sm_sv(y,mu,phi,sigmav,N,T)
   end
   
   % Sample the state estimate using the weights at tt=T
+  xhatf = zeros( 1, T+1);
   nIdx  = randsample( N, 1, true, w(:,T) );
-  indices = sub2ind(size(p), a(nIdx,:), 1:(T+1));
-  xhatf = p( indices );
+  for tt = 1:(T+1)
+    xhatf(tt) = p( a(nIdx,tt), tt );
+  end
 end
 
 % Helper for computing the logarithm of the Gaussian density
