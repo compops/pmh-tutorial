@@ -8,11 +8,11 @@ The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 > 
 
 Requirements
 --------------
-The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7 with some additional libraries/packages (see below).
+The code is written and tested for R 3.2.2, Matlab R2014a and Python 2.7.6 with some additional libraries/packages (see below).
 
 The implementation in R makes use of the packages Quandl and mvtnorm. They can be installed by the command "install.packages(c("mvtnorm","Quandl"))". 
 
-The implementation in Python makes use of NumPy 1.7.1, SciPy 0.12.0, Matplotlib 1.2.1, Pandas and Quandl. Please have these packages installed, on Ubuntu they can be installed using "sudo pip install --upgrade *package-name* ". See < https://www.quandl.com/tools/python > for more information.
+The implementation in Python makes use of NumPy 1.9.2, SciPy 0.15.1, Matplotlib 1.4.3, Pandas 0.13.1 and Quandl 2.8.9. On Ubuntu, these packages can be installed/upgraded using "sudo pip install --upgrade package-name ". For more information about the Quandl library, see < https://www.quandl.com/tools/python >.
 
 The implementation in Matlab makes use of the statistics toolbox and the Quandl package. See < https://github.com/quandl/Matlab > for more installation and to download the toolbox. Note that urlread2 is required by the Quandl toolbox and should be installed as detailed in the README file of the Quandl toolbox.
 
