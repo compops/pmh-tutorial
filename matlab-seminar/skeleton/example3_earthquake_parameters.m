@@ -66,6 +66,10 @@ xhhat =
 % Plot the results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot the results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 figure(2);
 
 % Plot the expected versus observed no. earthquakes
@@ -104,7 +108,6 @@ xlabel('beta'); ylabel('posterior density estimate');
 subplot(4,2,8);
 plot( nBurnIn:nIter, th( nBurnIn:nIter, 3 ) );
 xlabel('iteration'); ylabel('trace of beta');
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End of file
