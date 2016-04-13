@@ -98,7 +98,7 @@ function[th, xh] = pmh_earthquake( y, initPar, nPart, T, nIter, stepSize )
       disp([' Iteration: ',num2str(kk),' of : ', num2str(nIter) ,' completed.']);
       disp([' Current state of the Markov chain:       ', num2str(th(kk,:),3) ]);
       disp([' Proposed next state of the Markov chain: ', num2str(thp(kk,:),3) ]);
-      disp([' Current posterior mean:                  ', num2str( mean( th(1:kk),2 ) ,3 ) ]);
+      disp([' Current posterior mean:                  ', num2str( mean( th(1:kk,:),1 ) ,3 ) ]);
       disp([' Current acceptance rate:                 ', num2str( mean( accept(1:kk) ),3 ) ]);
       disp(['#####################################################################################']);
     end

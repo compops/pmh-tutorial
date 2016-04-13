@@ -43,9 +43,10 @@ function[ xhatf, llp ] = sm_earthquake( y, par, nPart, T )
   %===========================================================
   % Initialise variables
   %===========================================================
-  xhatf = zeros( T, 1 );
-  p     = zeros( nPart, T );
-  w     = ones(  nPart, T ) / nPart;
+  xhatf = zeros( T+1, 1 );
+  a     = zeros( nPart, T+1 );
+  p     = zeros( nPart, T+1 );
+  w     = ones(  nPart, T+1 ) / nPart;
   llp   = 0;
   
   p(:,1)   = 0;
@@ -56,12 +57,46 @@ function[ xhatf, llp ] = sm_earthquake( y, par, nPart, T )
   %===========================================================
   for tt = 2:(T+1)
 
-      %///////////////              ADD CODE             ///////////////
-      % (re-use code from particle filter for LGSS model)
-      ...
+    %=========================================================
+    % Resample ( multinomial )
+    %=========================================================
+    %///////////////              ADD CODE             ///////////////
+    idx = ...
     
+    % Resample the ancestory linage
+    a(:,1:tt-1) = a(idx,1:tt-1);
+    
+    % Add the most recent ancestors
+    a(:,tt)     = idx;    
+    
+    %=========================================================
+    % Propagate
+    %=========================================================
+    %///////////////              ADD CODE             ///////////////
+    p(:,tt) = ...
+    
+    %=========================================================
+    % Compute weights
+    %=========================================================
+    %///////////////              ADD CODE             ///////////////
+    w(:,tt) = ...
+    
+    % Rescale log-weights and recover weight
+    wmax    = max( w(:,tt) );
+    w(:,tt) = exp( w(:,tt) - wmax );
+    
+    % Estimate the log-likelihood
+    llp    = llp + wmax + log(sum( w(:,tt) )) - log(nPart);
+    
+    % Normalize the weights
+    w(:,tt) = w(:,tt) / sum( w(:,tt) );  
   end
   
+  % Sample the state estimate using the weights at tt=T
+  nIdx  = randsample( nPart, 1, true, w(:,T) );
+  for tt = 2:(T+1)
+      xhatf(tt) = p( a(nIdx,tt), tt );
+  end
 end
 
 

@@ -40,8 +40,8 @@ nPart    = 100;
 
 % The length of the burn-in and the no. iterations of PMH 
 % ( nBurnIn < nIter )
-nBurnIn  = 250;
-nIter    = 2000;
+nBurnIn  = 2500;
+nIter    = 20000;
 
 % The covariance matrix in the random walk proposal
 stepSize = diag( [0.07 0.03 2].^2 ); 
@@ -51,8 +51,8 @@ stepSize = 0.8 * stepSize;
 [th, xh] = pmh_earthquake( y, initPar, nPart, T, nIter, stepSize );
 
 % Compute posterior means
-thhat = mean( thhat, 1 )
-xhhat = mean( xh( nBurnIn:nIter, 2:(T+1) ), 1 )
+thhat = mean( th, 1 );
+xhhat = mean( xh( nBurnIn:nIter, 2:(T+1) ), 1 );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

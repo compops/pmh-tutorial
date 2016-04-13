@@ -43,9 +43,10 @@ function[ xhatf, llp ] = sm_earthquake( y, par, nPart, T )
   %===========================================================
   % Initialise variables
   %===========================================================
-  xhatf = zeros( T, 1 );
-  p     = zeros( nPart, T );
-  w     = ones(  nPart, T ) / nPart;
+  xhatf = zeros( T+1, 1 );
+  a     = zeros( nPart, T+1 );
+  p     = zeros( nPart, T+1 );
+  w     = ones(  nPart, T+1 ) / nPart;
   llp   = 0;
   
   p(:,1)   = 0;
@@ -60,6 +61,12 @@ function[ xhatf, llp ] = sm_earthquake( y, par, nPart, T )
     % Resample ( multinomial )
     %=========================================================
     idx = randsample( nPart, nPart, true, w(:,tt-1) ); 
+    
+    % Resample the ancestory linage
+    a(:,1:tt-1) = a(idx,1:tt-1);
+    
+    % Add the most recent ancestors
+    a(:,tt)     = idx;    
     
     %=========================================================
     % Propagate
@@ -80,12 +87,13 @@ function[ xhatf, llp ] = sm_earthquake( y, par, nPart, T )
     
     % Normalize the weights
     w(:,tt) = w(:,tt) / sum( w(:,tt) );
-    
-    % Estimate the state
-    xhatf(tt) = sum( w(:,tt) .* p(:,tt) );
-    
   end
   
+  % Sample the state estimate using the weights at tt=T
+  nIdx  = randsample( nPart, 1, true, w(:,T) );
+  for tt = 2:(T+1)
+      xhatf(tt) = p( a(nIdx,tt), tt );
+  end
 end
 
 
