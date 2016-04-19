@@ -1,22 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Example of Particle Metropolis-Hastings (PMH) for the Earthquake model
-%
-% Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
-%
-% This program is free software; you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation; either version 2 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License along
-% with this program; if not, write to the Free Software Foundation, Inc.,
-% 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+% Particle Metropolis-Hastings (PMH) 
+% for the Earthquake data with state space model.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -36,24 +21,25 @@ T = 114;
 initPar  = [ 0.5 0.5 15 ];
 
 % No. particles in the particle filter ( choose nPart ~ T )
-nPart    = 100;
+nParticles    = 100;
 
-% The length of the burn-in and the no. iterations of PMH 
+% The length of the burn-in and the no. iterations of the PMH algorithm
 % ( nBurnIn < nIter )
-nBurnIn  = 2500;
-nIter    = 20000;
+nBurnIn     = 500;
+nIterations = 2000;
 
 % The covariance matrix in the random walk proposal
-stepSize = diag( [0.07 0.03 2].^2 ); 
-stepSize = 0.8 * stepSize;
+Sigma = diag( [0.07 0.03 2].^2 ); 
+Sigma = 0.8 * Sigma;
 
 % Run the PMH algorithm
-[th, xh] = pmh_earthquake( y, initPar, nPart, T, nIter, stepSize );
+th = pmh( y, initPar, nParticles, nIterations, Sigma );
 
-% Compute posterior means
+% Compute the parameter posterior mean
 thhat = mean( th, 1 );
-xhhat = mean( xh( nBurnIn:nIter, 2:(T+1) ), 1 );
 
+% Run a particle filter to estimate the latent state
+xhhat = pf( y, thhat, nParticles );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the results
@@ -74,28 +60,28 @@ hold off;
 % Plot the parameter posterior estimate
 % Plot the trace of the Markov chain after burn-in
 subplot(4,2,3);
-hist( th( nBurnIn:nIter, 1 ), floor( sqrt( nIter - nBurnIn ) ) );
+hist( th( nBurnIn:nIterations, 1 ), floor( sqrt( nIterations - nBurnIn ) ) );
 xlabel('phi'); 
 ylabel('posterior density estimate');
 
 subplot(4,2,4);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 1 ) );
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 1 ) );
 xlabel('iteration'); ylabel('trace of phi');
 
 subplot(4,2,5);
-hist( th( nBurnIn:nIter, 2 ), floor( sqrt( nIter - nBurnIn ) ) );
+hist( th( nBurnIn:nIterations, 2 ), floor( sqrt( nIterations - nBurnIn ) ) );
 xlabel('sigmav'); ylabel('posterior density estimate');
 
 subplot(4,2,6);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 2 ) );
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 2 ) );
 xlabel('iteration'); ylabel('trace of sigmav');
 
 subplot(4,2,7);
-hist( th( nBurnIn:nIter, 3 ), floor( sqrt( nIter - nBurnIn ) ) );
+hist( th( nBurnIn:nIterations, 3 ), floor( sqrt( nIterations - nBurnIn ) ) );
 xlabel('beta'); ylabel('posterior density estimate');
 
 subplot(4,2,8);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 3 ) );
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 3 ) );
 xlabel('iteration'); ylabel('trace of beta');
 
 

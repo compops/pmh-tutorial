@@ -1,25 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Example of Particle Metropolis-Hastings (PMH) for the Earthquake model
-%
-% Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
-%
-% This program is free software; you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation; either version 2 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License along
-% with this program; if not, write to the Free Software Foundation, Inc.,
-% 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+% Example of Metropolis-Hastings (MH) for the Earthquake data
+% with IID model
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load data
@@ -35,24 +19,22 @@ T = 114;
 % The inital guess of the parameter
 initPar  = [ 0.5 0.5 15 ];
 
-% No. particles in the particle filter ( choose nPart ~ T )
-nPart    = 100;
-
-% The length of the burn-in and the no. iterations of PMH 
-% ( nBurnIn < nIter )
-nBurnIn  = 2500;
-nIter    = 20000;
+% The length of the burn-in and the no. iterations of MH algorithm 
+% ( nBurnIn < nIterations )
+nBurnIn     = 10000;
+nIterations = 50000;
 
 % The covariance matrix in the random walk proposal
-stepSize = diag( [0.07 0.03 2].^2 ); 
-stepSize = 0.8 * stepSize;
+Sigma = [ [ 121.3141    1.4331    3.1442];
+          [   1.4331    0.4692    0.0443];
+          [   3.1442    0.0443    0.3539] ];
+Sigma = 0.8 * Sigma;
 
-% Run the PMH algorithm
-[th, xh] = pmh_earthquake( y, initPar, nPart, T, nIter, stepSize );
+% Run the MH algorithm
+th = mh( y, initPar, nIterations, Sigma );
 
-% Compute posterior means
+% Compute the parameter posterior mean
 thhat = mean( th, 1 );
-xhhat = mean( xh( nBurnIn:nIter, 2:(T+1) ), 1 );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,43 +43,43 @@ xhhat = mean( xh( nBurnIn:nIter, 2:(T+1) ), 1 );
 
 figure(2);
 
-% Plot the expected versus observed no. earthquakes
+% Plot the data and the fitted model
 subplot(4,2,[1 2]);
-plot( y )
+hist( y, 25 )
 xlabel( 'time' ); 
 ylabel( 'no. earthquakes' );
 
 hold on; 
-plot( thhat(3) * exp(xhhat), 'r' ); 
+grid = 5:0.1:45;
+plot( grid, T .* exp( dt( grid, thhat ) ), 'r', 'LineWidth', 2 ); 
 hold off;
 
 % Plot the parameter posterior estimate
 % Plot the trace of the Markov chain after burn-in
 subplot(4,2,3);
-hist( th( nBurnIn:nIter, 1 ), floor( sqrt( nIter - nBurnIn ) ) );
-xlabel('phi'); 
+hist( th( nBurnIn:nIterations, 1 ), floor( sqrt( nIterations - nBurnIn ) ) );
+xlabel('nu'); 
 ylabel('posterior density estimate');
 
 subplot(4,2,4);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 1 ) );
-xlabel('iteration'); ylabel('trace of phi');
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 1 ) );
+xlabel('iteration'); ylabel('trace of nu');
 
 subplot(4,2,5);
-hist( th( nBurnIn:nIter, 2 ), floor( sqrt( nIter - nBurnIn ) ) );
-xlabel('sigmav'); ylabel('posterior density estimate');
+hist( th( nBurnIn:nIterations, 2 ), floor( sqrt( nIterations - nBurnIn ) ) );
+xlabel('mu'); ylabel('posterior density estimate');
 
 subplot(4,2,6);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 2 ) );
-xlabel('iteration'); ylabel('trace of sigmav');
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 2 ) );
+xlabel('iteration'); ylabel('trace of mu');
 
 subplot(4,2,7);
-hist( th( nBurnIn:nIter, 3 ), floor( sqrt( nIter - nBurnIn ) ) );
-xlabel('beta'); ylabel('posterior density estimate');
+hist( th( nBurnIn:nIterations, 3 ), floor( sqrt( nIterations - nBurnIn ) ) );
+xlabel('sigma'); ylabel('posterior density estimate');
 
 subplot(4,2,8);
-plot( nBurnIn:nIter, th( nBurnIn:nIter, 3 ) );
-xlabel('iteration'); ylabel('trace of beta');
-
+plot( nBurnIn:nIterations, th( nBurnIn:nIterations, 3 ) );
+xlabel('iteration'); ylabel('trace of sigma');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End of file
