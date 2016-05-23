@@ -28,7 +28,7 @@ function[ theta ] = mh( observations, initialTheta, nIterations, Sigma )
   theta(1,:) = initialTheta;  
   
   % Compute the initial log-likelihood
-  loglikelihood(1) = sum( dt(observations, theta(1,:)) );
+  loglikelihood(1) = sum( dpoisson(observations, theta(1,:)) );
   
   %=====================================================================
   % Run main loop
@@ -38,9 +38,9 @@ function[ theta ] = mh( observations, initialTheta, nIterations, Sigma )
     % Propose a new parameter
     theta_proposed = mvnrnd( theta(kk-1,:), Sigma );
     
-    % Estimate the log-likelihood if DOF and sigma is positive
-    if ( ( theta_proposed(1) > 0.0 ) && ( theta_proposed(3) > 0.0 ) )
-        loglikelihood_proposed = sum( dt(observations, theta_proposed) );
+    % Estimate the log-likelihood if the intensity is positive
+    if ( theta_proposed(1) > 0.0 )
+        loglikelihood_proposed = sum( dpoisson(observations, theta_proposed) );
     else
         loglikelihood_proposed = -inf;
     end
