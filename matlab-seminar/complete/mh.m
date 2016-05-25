@@ -19,16 +19,16 @@
 
 function[ theta ] = mh( observations, initialTheta, nIterations, Sigma )
   
- % Initalise variables
+ % Initialise variables
   theta         = zeros( nIterations, length(initialTheta) ); 
-  loglikelihood = zeros( nIterations, 1 );
+  logposterior  = zeros( nIterations, 1 );
   accept        = zeros( nIterations, 1 );
   
   % Set the initial parameter
   theta(1,:) = initialTheta;  
   
-  % Compute the initial log-likelihood
-  loglikelihood(1) = sum( dpoisson(observations, theta(1,:)) );
+  % Compute the initial log-posterior
+  logposterior(1) = sum( dpoisson(observations, theta(1,:)) );
   
   %=====================================================================
   % Run main loop
@@ -38,15 +38,15 @@ function[ theta ] = mh( observations, initialTheta, nIterations, Sigma )
     % Propose a new parameter
     theta_proposed = mvnrnd( theta(kk-1,:), Sigma );
     
-    % Estimate the log-likelihood if the intensity is positive
+    % Compute the log-posterior if the intensity is positive
     if ( theta_proposed(1) > 0.0 )
-        loglikelihood_proposed = sum( dpoisson(observations, theta_proposed) );
+        logposterior_proposed = sum( dpoisson(observations, theta_proposed) );
     else
-        loglikelihood_proposed = -inf;
+        logposterior_proposed = -inf;
     end
     
     % Compute the acceptance probability
-    aprob = exp( loglikelihood_proposed - loglikelihood(kk-1) );
+    aprob = exp( logposterior_proposed - logposterior(kk-1) );
     
     % Generate uniform random variable in U[0,1]
     u = unifrnd(0,1);
@@ -56,13 +56,13 @@ function[ theta ] = mh( observations, initialTheta, nIterations, Sigma )
       
       % Accept the parameter
       theta(kk,:)        = theta_proposed;
-      loglikelihood(kk)  = loglikelihood_proposed;
+      logposterior(kk)   = logposterior_proposed;
       accept(kk)         = 1.0;
       
     else
       % Reject the parameter
       theta(kk,:)        = theta(kk-1,:);
-      loglikelihood(kk)  = loglikelihood(kk-1);
+      logposterior(kk)   = logposterior(kk-1);
       accept(kk)         = 0.0;
     end
     
