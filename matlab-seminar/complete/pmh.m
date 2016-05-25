@@ -21,16 +21,16 @@
 
 function[ theta ] = pmh( observations, initialTheta, nParticles, nIterations, Sigma )
   
- % Initalise variables
+ % Initialise variables
   theta          = zeros( nIterations, length(initialTheta) );
-  loglikelihood  = zeros( nIterations, 1 );
+  logposterior   = zeros( nIterations, 1 );
   accept         = zeros( nIterations, 1 );
   
   % Set the initial parameter
   theta(1,:) = initialTheta;  
   
-  % Run the initial particle filter to estimate the log-likelihood
-  [ ~ , loglikelihood(1) ] = pf( observations, theta(1,:), nParticles );
+  % Run the initial particle filter to estimate the log-posterior
+  [ ~ , logposterior(1) ] = pf( observations, theta(1,:), nParticles );
   
   %=====================================================================
   % Run main loop
@@ -40,15 +40,15 @@ function[ theta ] = pmh( observations, initialTheta, nParticles, nIterations, Si
     % Propose a new parameter
     theta_proposed = mvnrnd( theta(kk-1,:), Sigma );
     
-    % Estimate the log-likelihood (don't run if unstable system)
-    if ( abs( theta_proposed(1) ) < 1.0 )
-      [ ~, loglikelihood_proposed ] = pf( observations, theta_proposed, nParticles );
+    % Estimate the log-posterior (don't run if unstable system)
+    if ( ( abs( theta_proposed(1) ) < 1.0 ) && ( theta_proposed(2) > 0 ) && ( theta_proposed(3) > 0) )
+      [ ~, logposterior_proposed ] = pf( observations, theta_proposed, nParticles );
     else
-        loglikelihood_proposed = -inf;
+        logposterior_proposed = -inf;
     end
     
     % Compute the acceptance probability
-    aprob = exp( loglikelihood_proposed - loglikelihood(kk-1) );
+    aprob = exp( logposterior_proposed - logposterior(kk-1) );
     
     % Generate uniform random variable in U[0,1]
     u = unifrnd(0,1);
@@ -58,13 +58,13 @@ function[ theta ] = pmh( observations, initialTheta, nParticles, nIterations, Si
       
       % Accept the parameter
       theta(kk,:)       = theta_proposed;
-      loglikelihood(kk) = loglikelihood_proposed;
+      logposterior(kk)  = logposterior_proposed;
       accept(kk) = 1.0;
       
     else
       % Reject the parameter
       theta(kk,:)       = theta(kk-1,:);
-      loglikelihood(kk) = loglikelihood(kk-1);
+      logposterior(kk)  = logposterior(kk-1);
       accept(kk)        = 0.0;
     end
     
