@@ -48,7 +48,7 @@ ylabel( 'no. earthquakes' );
 
 hold on; 
 grid = 5:1:45;
-plot( grid, T .* exp( poisson( grid, thhat ) ), 'r', 'LineWidth', 2 ); 
+plot( grid, T .* exp( dpoisson( grid, thhat ) ), 'r', 'LineWidth', 2 ); 
 hold off;
 
 % Plot the parameter posterior estimate

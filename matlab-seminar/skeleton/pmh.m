@@ -21,7 +21,7 @@
 
 function[ theta ] = pmh( observations, initialTheta, nParticles, nIterations, Sigma )
   
-  % Hint: modify mh.mby replacing dpoisson with pf to compute the
+  % Hint: modify mh.m by replacing dpoisson with pf to compute the
   % likelihood for the acceptance probability
   
 end
