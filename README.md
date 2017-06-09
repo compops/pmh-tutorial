@@ -1,10 +1,10 @@
 # pmh-tutorial
 
-This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://liu.johandahlin.com/ > and contains the code used to produce the results in the tutorial
+This code was downloaded from < https://github.com/compops/pmh-tutorial > or from < http://work.johandahlin.com/ > and contains the code used to produce the results in the tutorial
 
-J. Dahlin and T. B. Schön, **Getting started with particle Metropolis-Hastings for inference in nonlinear models**. Pre-print, arXiv:1511:01707, 2015. 
+J. Dahlin and T. B. Schön, **Getting started with particle Metropolis-Hastings for inference in nonlinear models**. Pre-print, arXiv:1511:01707, 2017. 
 
-The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 > and < http://liu.johandahlin.com/ >.
+The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 > and < http://work.johandahlin.com/ >.
 
 Requirements
 --------------

@@ -1,329 +1,416 @@
 ##############################################################################
 #
-# Example of particle Metropolis-Hastings 
+# Example of particle Metropolis-Hastings
 #
 # Subroutine for particle Metropolis-Hastings
 #
-# Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 ##############################################################################
 
+
 ##############################################################################
 # Particle Metropolis-Hastings (LGSS model)
 ##############################################################################
 
-pmh <- function(y, initPar, sigmav, sigmae, nPart, T, x0, nIter, stepSize) {
-  
-  #
-  # Particle Metropolis-Hastings (PMH) for the LGSS model
-  #
-  # Inputs:
-  # y:                   observations from the system for t=1,...,T.
-  #
-  # initPar:             initial value for phi (persistence of the state)
-  #
-  # sigmav, sigmae:      the standard deviations of the state innovations 
-  #                      and observation noise.
-  #
-  # nPart:               number of particles (N)
-  #
-  # T and x0:            the no. observations and initial state.
-  #
-  # nIter and stepSize:  the number of iterations in PMH and the 
-  #                      standard deviation of the RW proposal.
-  #
-  # Outputs:
-  # th:                  K samples from the parameter posterior.
-  #
-  #
-  
-  #===========================================================
-  # Initialise variables
-  #===========================================================
-  th     <- matrix(0, nrow=nIter, ncol=1)
-  thp    <- matrix(0, nrow=nIter, ncol=1)
-  ll     <- matrix(0, nrow=nIter, ncol=1)
-  llp    <- matrix(0, nrow=nIter, ncol=1)
-  accept <- matrix(0, nrow=nIter, ncol=1)
-  
-  # Set the initial parameter and estimate the initial log-likelihood
-  th[1]  <- initPar
-  ll[1]  <- sm(y, th[1], sigmav, sigmae, nPart, T, x0)$ll
-  
-  #=====================================================================
-  # Run main loop
-  #=====================================================================
-  for (kk in 2:nIter) {
+particleMetropolisHastings <-
+  function(y,
+           initialPhi,
+           sigmav,
+           sigmae,
+           noParticles,
+           initialState,
+           noIterations,
+           stepSize) {
+    #
+    # Particle Metropolis-Hastings (PMH) for the LGSS model
+    #
+    # Inputs:
+    # y:                   observations from the system for t=1,...,T.
+    #
+    # initPar:             initial value for phi (persistence of the state)
+    #
+    # sigmav, sigmae:      the standard deviations of the state innovations
+    #                      and observation noise.
+    #
+    # noParticles:         number of particles (N)
+    #
+    # initialState:        initial state
+    #
+    # noIterations:        the number of iterations in PMH.
+    #
+    # stepSize:            the standard deviation of the RW proposal.
+    #
+    # Outputs:
+    # phi:                 K samples from the parameter posterior
+    #
+    #
     
-    # Propose a new parameter
-    thp[kk] <- th[kk-1] + stepSize * rnorm(1)
+    #===========================================================
+    # Initialise variables
+    #===========================================================
+    phi <- matrix(0, nrow = noIterations, ncol = 1)
+    phiProposed <- matrix(0, nrow = noIterations, ncol = 1)
+    logLikelihood <- matrix(0, nrow = noIterations, ncol = 1)
+    logLikelihoodProposed <- matrix(0, nrow = noIterations, ncol = 1)
+    proposedPhiAccepted <- matrix(0, nrow = noIterations, ncol = 1)
     
-    # Estimate the log-likelihood (don't run if unstable system)
-    if (abs(thp[kk]) < 1.0) {
-      llp[kk] <- sm(y, thp[kk], sigmav, sigmae, nPart, T, x0)$ll
+    # Set the initial parameter and estimate the initial log-likelihood
+    phi[1] <- initialPhi
+    theta <- c(phi[1], sigmav, sigmae)
+    outputPF <- particleFilter(y, theta, noParticles, initialState)
+    logLikelihood[1]<- outputPF$logLikelihood
+    
+    #=====================================================================
+    # Run main loop
+    #=====================================================================
+    for (k in 2:noIterations) {
+      # Propose a new parameter
+      phiProposed[k] <- phi[k - 1] + stepSize * rnorm(1)
+      
+      # Estimate the log-likelihood (don't run if unstable system)
+      if (abs(phiProposed[k]) < 1.0) {
+        theta <- c(phiProposed[k], sigmav, sigmae)
+        outputPF <- particleFilter(y, theta, noParticles, initialState)
+        logLikelihoodProposed[k] <- outputPF$logLikelihood
+      }
+      
+      # Compute the acceptance probability
+      priorPart <- dnorm(phiProposed[k], log = TRUE) - part1
+      priorPart <- priorPart - dnorm(phi[k - 1], log = TRUE)
+      likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
+      acceptProbability <- exp(priorPart + likelihoodDifference)
+      
+      # Always reject if parameter results in an unstable system
+      acceptProbability <- acceptProbability * (abs(phiProposed[k]) < 1.0)
+       
+      # Generate uniform random variable in U[0,1]
+      uniformRandomVariable <- runif(1)
+      
+      # Accept / reject step
+      if (uniformRandomVariable < acceptProbability) {
+        # Accept the parameter
+        phi[k] <- phiProposed[k]
+        logLikelihood[k] <- logLikelihoodProposed[k]
+        proposedPhiAccepted[k] <- 1
+      } else {
+        # Reject the parameter
+        phi[k] <- phi[k - 1]
+        logLikelihood[k] <- logLikelihood[k - 1]
+        proposedPhiAccepted[k] <- 0
+      }
+      
+      # Write out progress
+      if (k %% 100 == 0) {
+        cat(
+          sprintf(
+            "#####################################################################\n"
+          )
+        )
+        cat(sprintf(" Iteration: %d of : %d completed.\n \n", k, noIterations))
+        cat(sprintf(" Current state of the Markov chain:       %.4f \n", phi[k]))
+        cat(sprintf(" Proposed next state of the Markov chain: %.4f \n", phiProposed[k]))
+        cat(sprintf(" Current posterior mean:                  %.4f \n", mean(phi[0:k])))
+        cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(proposedPhiAccepted[0:k])))
+        cat(
+          sprintf(
+            "#####################################################################\n"
+          )
+        )
+      }
     }
     
-    # Compute the acceptance probability
-    aprob <- exp(dnorm(thp[kk], log=TRUE) - dnorm(th[kk-1], log=TRUE) + llp[kk] - ll[kk-1])
-    
-    # Generate uniform random variable in U[0,1]
-    u = runif(1)
-    
-    # Accept / reject step
-    # Check if | phi | > 1.0, in that case always reject.
-    if ((u < aprob) && ( abs( thp[kk] ) < 1.0 )) {
-      # Accept the parameter
-      th[kk]     <- thp[kk]
-      ll[kk]     <- llp[kk]
-      accept[kk] <- 1.0
-    } else {
-      # Reject the parameter
-      th[kk]     <- th[kk-1]
-      ll[kk]     <- ll[kk-1]       
-      accept[kk] <- 0.0
-    }
-    
-    # Write out progress
-    if (kk%%100 == 0) {
-      cat(sprintf("#####################################################################\n"))
-      cat(sprintf(" Iteration: %d of : %d completed.\n \n", kk, nIter))
-      cat(sprintf(" Current state of the Markov chain:       %.4f \n", th[kk] ))
-      cat(sprintf(" Proposed next state of the Markov chain: %.4f \n", thp[kk] ))
-      cat(sprintf(" Current posterior mean:                  %.4f \n", mean(th[0:kk]) ))
-      cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(accept[0:kk]) ))
-      cat(sprintf("#####################################################################\n"))
-    }
+    #=====================================================================
+    # Return traces of the parameter phi
+    #=====================================================================
+    phi
   }
-  
-  #=====================================================================
-  # Return traces of the parameters
-  #=====================================================================
-  th
-}
 
 
 ##############################################################################
 # Particle Metropolis-Hastings (SV model)
 ##############################################################################
 
-pmh_sv <- function(y, initPar, nPart, T, nIter, stepSize) {
+particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIterations, stepSize) {
   #
   # Particle Metropolis-Hastings (PMH) for the SV model
   #
   # Inputs:
   # y:                   observations from the system for t=1,...,T.
   #
-  # initPar:             initial values of the parameters
+  # initialTheta:        initial values of the parameters
   #                      ( mu, phi, sigmav )
   #
-  # nPart:               number of particles (N)
+  # noParticles:         number of particles (N)
   #
-  # T:                   the no. observations.
+  # noIterations:        the number of iterations in PMH
   #
-  # nIter and stepSize:  the number of iterations in PMH and the 
-  #                      standard deviation of the RW proposal.
+  # stepSize:            the standard deviation of the RW proposal.
   #
   # Outputs:
-  # th:                  K samples from the parameter posterior.
+  # theta:               K samples from the parameter posterior.
   #
   #
-    
+  
+  T <- length(y) - 1
   #===========================================================
   # Initialise variables
   #===========================================================
-  xh     <- matrix(0, nrow=nIter, ncol=T+1)
-  xhp    <- matrix(0, nrow=nIter, ncol=T+1)
-  th     <- matrix(0, nrow=nIter, ncol=3)
-  thp    <- matrix(0, nrow=nIter, ncol=3)
-  ll     <- matrix(0, nrow=nIter, ncol=1)
-  llp    <- matrix(0, nrow=nIter, ncol=1)
-  accept <- matrix(0, nrow=nIter, ncol=1)
+  xHatFiltered <- matrix(0, nrow = noIterations, ncol = T + 1)
+  xHatFilteredProposed <- matrix(0, nrow = noIterations, ncol = T + 1)
+  theta <- matrix(0, nrow = noIterations, ncol = 3)
+  thetaProposed <- matrix(0, nrow = noIterations, ncol = 3)
+  logLikelihood <- matrix(0, nrow = noIterations, ncol = 1)
+  logLikelihoodProposed <- matrix(0, nrow = noIterations, ncol = 1)
+  proposedThetaAccepted <- matrix(0, nrow = noIterations, ncol = 1)
   
   # Set the initial parameter and estimate the initial log-likelihood
-  th[1,]  <- initPar
-  res     <- sm_sv(y, th[1,1], th[1,2], th[1,3], nPart, T)
-  ll[1]   <- res$ll
-  xh[1,]  <- res$xh
+  theta[1, ] <- initialTheta
+  res <- particleFilterSVmodel(y, theta[1, ], noParticles)
+  logLikelihood[1] <- res$logLikelihood
+  xHatFiltered[1, ] <- res$xHatFiltered
   
   #=====================================================================
   # Run main loop
   #=====================================================================
-  for (kk in 2:nIter) {
-    
+  for (k in 2:noIterations) {
     # Propose a new parameter
-    thp[kk,] <- rmvnorm(1, mean=th[kk-1,], sigma=stepSize)
+    thetaProposed[k, ] <- rmvnorm(1, mean = theta[k - 1, ], sigma = stepSize)
     
     # Estimate the log-likelihood (don't run if unstable system)
-    if ((abs(thp[kk,2]) < 1.0 ) && (thp[kk,3] > 0.0 )) {
-      res      <- sm_sv(y, thp[kk,1], thp[kk,2], thp[kk,3], nPart, T)
-      llp[kk]  <- res$ll
-      xhp[kk,] <- res$xh
+    if ((abs(thetaProposed[k, 2]) < 1.0) && (thetaProposed[k, 3] > 0.0)) {
+      res <- particleFilterSVmodel(y, thetaProposed[k, ], noParticles)
+      logLikelihoodProposed[k]  <- res$logLikelihood
+      xHatFilteredProposed[k, ] <- res$xHatFiltered
     }
     
     # Compute difference in the log-priors
-    dpmu  <- dnorm(thp[kk,1], 0, 1, log=TRUE) - dnorm(th[kk-1,1], 0, 1, log=TRUE)
-    dpphi <- dnorm(thp[kk,2], 0.95, 0.05, log=TRUE) - dnorm(th[kk-1,2], 0.95, 0.05, log=TRUE)
-    dpsiv <- dgamma(thp[kk,3], 2, 10, log=TRUE) - dgamma(th[kk-1,3], 2, 10, log=TRUE)
+    priorMu <- dnorm(thetaProposed[k, 1], 0, 1, log = TRUE) - dnorm(theta[k - 1, 1], 0, 1, log = TRUE)
+    priorPhi <- dnorm(thetaProposed[k, 2], 0.95, 0.05, log = TRUE) - dnorm(theta[k - 1, 2], 0.95, 0.05, log = TRUE)
+    priorSigmaV <- dgamma(thetaProposed[k, 3], 2, 10, log = TRUE) - dgamma(theta[k - 1, 3], 2, 10, log = TRUE)
     
     # Compute the acceptance probability
-    aprob <- exp(dpmu + dpphi + dpsiv + llp[kk] - ll[kk-1])
+    likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
+    acceptProbability <- exp(priorMu + priorPhi + priorSigmaV + likelihoodDifference)
+    
+    # Always reject if parameter results in an unstable system
+    acceptProbability <- acceptProbability * (abs(thetaProposed[k, 2]) < 1.0)
     
     # Generate uniform random variable in U[0,1]
-    u <- runif(1)
+    uniformRandomVariable <- runif(1)
     
     # Accept / reject step
-    # Check if | phi | > 1.0, in that case always reject.
-    if ((u < aprob) && (abs(thp[kk,2]) < 1.0)) {
+    if (uniformRandomVariable < acceptProbability) {
       # Accept the parameter
-      th[kk,]     <- thp[kk,]
-      ll[kk]      <- llp[kk]
-      xh[kk,]     <- xhp[kk,]
-      accept[kk]  <- 1.0
+      theta[k, ] <- thetaProposed[k, ]
+      logLikelihood[k] <- logLikelihoodProposed[k]
+      xHatFiltered[k, ] <- xHatFilteredProposed[k, ]
+      proposedThetaAccepted[k] <- 1
     } else {
       # Reject the parameter
-      th[kk,]     <- th[kk-1,]
-      ll[kk]      <- ll[kk-1]      
-      xh[kk,]     <- xh[kk-1,]
-      accept[kk]  <- 0.0
+      theta[k, ]  <- theta[k - 1, ]
+      logLikelihood[k] <- logLikelihood[k - 1]
+      xHatFiltered[k, ] <- xHatFiltered[k - 1, ]
+      proposedThetaAccepted[k] <- 0
     }
     
     # Write out progress
-    if (kk%%100 == 0) {
-      cat(sprintf("#####################################################################\n"))
-      cat(sprintf(" Iteration: %d of : %d completed.\n \n", kk, nIter));
-      cat(sprintf(" Current state of the Markov chain:       %.4f %.4f %.4f \n", th[kk,1], th[kk,2], th[kk,3] ))
-      cat(sprintf(" Proposed next state of the Markov chain: %.4f %.4f %.4f \n", thp[kk,1], thp[kk,2], thp[kk,3] ))
-      cat(sprintf(" Current posterior mean:                  %.4f %.4f %.4f \n", mean(th[0:kk,1]), mean(th[0:kk,2]), mean(th[0:kk,3]) ))
-      cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(accept[0:kk]) ))
-      cat(sprintf("#####################################################################\n"))
+    if (k %% 100 == 0) {
+      cat(
+        sprintf(
+          "#####################################################################\n"
+        )
+      )
+      cat(sprintf(" Iteration: %d of : %d completed.\n \n", k, noIterations))
+      
+      cat(sprintf(
+        " Current state of the Markov chain:       %.4f %.4f %.4f \n",
+        theta[k, 1],
+        theta[k, 2],
+        theta[k, 3]
+      ))
+      cat(
+        sprintf(
+          " Proposed next state of the Markov chain: %.4f %.4f %.4f \n",
+          thetaProposed[k, 1],
+          thetaProposed[k, 2],
+          thetaProposed[k, 3]
+        )
+      )
+      cat(sprintf(
+        " Current posterior mean:                  %.4f %.4f %.4f \n",
+        mean(thetaProposed[0:k, 1]),
+        mean(thetaProposed[0:k, 2]),
+        mean(thetaProposed[0:k, 3])
+      ))
+      cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(proposedThetaAccepted[0:k])))
+      cat(
+        sprintf(
+          "#####################################################################\n"
+        )
+      )
     }
   }
   
   #=====================================================================
   # Return traces of the parameters
   #=====================================================================
-  list(thhat=th, xhat=xh)
+  list(theta = theta, xHatFiltered = xHatFiltered)
 }
+
 
 ##############################################################################
 # Particle Metropolis-Hastings (SV model)
 ##############################################################################
 
-pmh_sv_reparameterised <- function(y, initPar, nPart, T, nIter, stepSize){
-  #
-  # Particle Metropolis-Hastings (PMH) for the SV model
-  #
-  # Inputs:
-  # y:                   observations from the system for t=1,...,T.
-  #
-  # initPar:             initial values of the parameters
-  #                      ( mu, phi, sigmav )
-  #
-  # nPart:               number of particles (N)
-  #
-  # T:                   the no. observations.
-  #
-  # nIter and stepSize:  the number of iterations in PMH and the 
-  #                      standard deviation of the RW proposal.
-  #
-  # Outputs:
-  # th:                  K samples from the parameter posterior.
-  #
-  #
-  
-  #===========================================================
-  # Initialise variables
-  #===========================================================
-  xh     <- matrix(0, nrow=nIter, ncol=T+1)
-  xhp    <- matrix(0, nrow=nIter, ncol=T+1)
-  th     <- matrix(0, nrow=nIter, ncol=3)
-  thp    <- matrix(0, nrow=nIter, ncol=3)
-  tht    <- matrix(0, nrow=nIter, ncol=3)
-  thpt   <- matrix(0, nrow=nIter, ncol=3)  
-  ll     <- matrix(0, nrow=nIter, ncol=1)
-  llp    <- matrix(0, nrow=nIter, ncol=1)
-  accept <- matrix(0, nrow=nIter, ncol=1)
-  
-  # Set the initial parameter and estimate the initial log-likelihood
-  tht[1,] <- initPar
-  res     <- sm_sv(y, tht[1,1], tht[1,2], tht[1,3], nPart, T)
-  th[1,]  <- c(tht[1,1], atanh( tht[1,2]), log(tht[1,3]))
-  ll[1]   <- res$ll
-  xh[1,]  <- res$xh
-  
-  #=====================================================================
-  # Run main loop
-  #=====================================================================
-  for (kk in 2:nIter) {
+particleMetropolisHastingsSVmodelReparameterised <-
+    function(y, initialTheta, noParticles, noIterations, stepSize) {
+    #
+    # Particle Metropolis-Hastings (PMH) for the SV model
+    #
+    # Inputs:
+    # y:                   observations from the system for t=1,...,T.
+    #
+    # initialTheta:        initial values of the parameters
+    #                      ( mu, phi, sigmav )
+    #
+    # noParticles:         number of particles (N)
+    #
+    # noIterations:        the number of iterations in PMH
+    #
+    # stepSize:            the standard deviation of the RW proposal.
+    #
+    # Outputs:
+    # theta:               K samples from the parameter posterior.
+    #
+    #
     
-    # Propose a new parameter
-    thp[kk,] <- rmvnorm(1, mean=th[kk-1,], sigma=stepSize);
+    #===========================================================
+    # Initialise variables
+    #===========================================================
+    xHatFiltered <- matrix(0, nrow = noIterations, ncol = T + 1)
+    xHatFilteredProposed <- matrix(0, nrow = noIterations, ncol = T + 1)
+    theta <- matrix(0, nrow = noIterations, ncol = 3)
+    thetaProposed <- matrix(0, nrow = noIterations, ncol = 3)
+    thetaTransformed <- matrix(0, nrow = noIterations, ncol = 3)
+    thetaTransformedProposed <- matrix(0, nrow = noIterations, ncol = 3)
+    logLikelihood <- matrix(0, nrow = noIterations, ncol = 1)
+    logLikelihoodProposed <- matrix(0, nrow = noIterations, ncol = 1)
+    proposedThetaAccepted <- matrix(0, nrow = noIterations, ncol = 1)      
     
-    # Run the particle filter
-    thpt[kk,]   <- c(thp[kk,1], tanh(thp[kk,2]), exp(thp[kk,3]))
-    res         <- sm_sv(y, thpt[ kk,1], thpt[ kk,2], thpt[ kk,3], nPart, T)
-    xhp[kk,]    <- res$xh
-    llp[ kk ]   <- res$ll
+    # Set the initial parameter and estimate the initial log-likelihood
+    theta[1, ] <- initialTheta
+    res <- particleFilter_sv(y, theta[1, ], noParticles, T)
+    thetaTranformed[1, ] <- c(theta[1, 1], atanh(theta[1, 2]), log(theta[1, 3]))
+    logLikelihood[1] <- res$logLikelihood
+    xHatFiltered[1, ] <- res$xHatFiltered
     
-    # Compute the acceptance probability
-    logPrior1 <- dnorm(thpt[kk,1], log=TRUE) - dnorm(tht[kk-1,1], log=TRUE)
-    logPrior2 <- dnorm(thpt[kk,2], 0.95, 0.05, log=TRUE) - dnorm(tht[kk-1,2], 0.95, 0.05, log=TRUE)
-    logPrior3 <- dgamma(thpt[kk,3], 3, 10, log=TRUE) - dgamma(tht[ kk-1, 3 ], 3, 10, log=TRUE)
-    
-    logJacob  <- log(abs(1 - thpt[kk,2 ]^2)) - log(abs(1 - tht[kk-1,2]^2)) + log(abs(thpt[kk,3])) - log(abs(tht[kk-1,3]))
-    aprob     <- exp(logPrior1 + logPrior2 + logPrior3 + llp[kk] - ll[kk-1] + logJacob)
-    
-    # Generate uniform random variable in U[0,1]
-    u <- runif(1)
-    
-    # Accept / reject step
-    if (u < aprob) {
-      # Accept the parameter
-      th[kk,]     <- thp[kk,]
-      tht[kk,]    <- thpt[kk,]
-      ll[kk]      <- llp[kk]
-      xh[kk,]     <- xhp[kk,]
-      accept[kk]  <- 1.0
-    } else {
-      # Reject the parameter
-      th[kk,]     <- th[kk-1,]
-      tht[kk,]    <- tht[kk-1,]
-      ll[kk]      <- ll[kk-1]      
-      xh[kk,]     <- xh[kk-1,]
-      accept[kk]  <- 0.0
+    #=====================================================================
+    # Run main loop
+    #=====================================================================
+    for (k in 2:niIterations) {
+      # Propose a new parameter
+      thetaTransformedProposed[k, ] <- rmvnorm(1, mean = thetaTranformed[k - 1, ], sigma = stepSize)
+      
+      # Run the particle filter
+      thetaProposed[k, ] <- c(thetaTransformedProposed[k, 1], tanh(thetaTransformedProposed[k, 2]), exp(thetaTransformedProposed[k, 3]))
+      res <- particleFilter_sv(y, thetaProposed[k, ], noParticles, T)
+      xHatFilteredProposed[k, ] <- res$xHatFiltered
+      logLikelihoodProposed[k] <- res$logLikelihood
+      
+      # Compute the acceptance probability
+      logPrior1 <- dnorm(thetaProposed[k, 1], log = TRUE) - dnorm(theta[k - 1, 1], log = TRUE)
+      logPrior2 <-dnorm(thetaProposed[k, 2], 0.95, 0.05, log = TRUE) - dnorm(theta[k - 1, 2], 0.95, 0.05, log = TRUE)
+      logPrior3 <- dgamma(thetaProposed[k, 3], 3, 10, log = TRUE) - dgamma(theta[k - 1, 3], 3, 10, log = TRUE)
+      logPrior <- logPrior1 + logPrior2 + logPrior3
+      
+      logJacob1 <- log(abs(1 - thetaProposed[k, 2]^2)) -log(abs(1 - theta[k - 1, 2]^2))
+      logJacob3 <- log(abs(thetaProposed[k, 3])) - log(abs(theta[k - 1, 3]))
+      logJacob <- logJacob1 + logJacob2
+      
+      acceptProbability <- exp(logPrior + logLikelihoodProposed[k] - logLikelihood[k - 1] + logJacob)
+      
+      # Generate uniform random variable in U[0,1]
+      uniformRandomVariable <- runif(1)
+      
+      # Accept / reject step
+      if (uniformRandomVariable < acceptProbability) {
+        # Accept the parameter
+        theta[k, ] <- thetaProposed[k, ]
+        thetaTransformed[k, ] <- thetaTransformedProposed[k, ]
+        logLikelihood[k] <- logLikelihoodProposed[k]
+        xHatFiltered[k, ] <- xHatFilteredProposed[k, ]
+        proposedThetaAccepted[k] <- 1
+      } else {
+        # Reject the parameter
+        theta[k, ] <- theta[k - 1, ]
+        thetaTransformed[k, ] <- thetaTransformed[k - 1, ]
+        logLikelihood[k] <- logLikelihood[k - 1]
+        xHatFiltered[k, ] <- xHatFiltered[k - 1, ]
+        proposedThetaAccepted[k]  <- 0
+      }
+      
+      # Write out progress
+      if (k %% 100 == 0) {
+        cat(
+          sprintf(
+            "#####################################################################\n"
+          )
+        )
+        cat(sprintf(" Iteration: %d of : %d completed.\n \n", k, noIterations))
+        cat(sprintf(
+          " Current state of the Markov chain:       %.4f %.4f %.4f \n",
+          thetaTransformed[k, 1],
+          thetaTransformed[k, 2],
+          thetaTransformed[k, 3]
+        ))
+        cat(
+          sprintf(
+            " Proposed next state of the Markov chain: %.4f %.4f %.4f \n",
+            thetaTransformedProposed[k, 1],
+            thetaTransformedProposed[k, 2],
+            thetaTransformedProposed[k, 3]
+          )
+        )
+        cat(sprintf(
+          " Current posterior mean:                  %.4f %.4f %.4f \n",
+          mean(theta[0:k, 1]),
+          mean(theta[0:k, 2]),
+          mean(theta[0:k, 3])
+        ))
+        cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(proposedThetaAccepted[0:k])))
+        cat(
+          sprintf(
+            "#####################################################################\n"
+          )
+        )
+        
+      }
     }
     
-    # Write out progress
-    if (kk%%100 == 0) {
-      cat(sprintf("#####################################################################\n"))
-      cat(sprintf(" Iteration: %d of : %d completed.\n \n", kk, nIter))
-      cat(sprintf(" Current state of the Markov chain:       %.4f %.4f %.4f \n", tht[kk,1], tht[kk,2], tht[kk,3] ))
-      cat(sprintf(" Proposed next state of the Markov chain: %.4f %.4f %.4f \n", thpt[kk,1], thpt[kk,2], thpt[kk,3] ))
-      cat(sprintf(" Current posterior mean:                  %.4f %.4f %.4f \n", mean(tht[0:kk,1]), mean(tht[0:kk,2]), mean(tht[0:kk,3]) ))
-      cat(sprintf(" Current acceptance rate:                 %.4f \n", mean(accept[0:kk]) ))
-      cat(sprintf("#####################################################################\n"));
+    #=====================================================================
+    # Return traces of the parameters
+    #=====================================================================
+    list(theta = theta,
+         xHatFiltered = xHatFiltered,
+         thetaTransformed = thetaTransformed)
     }
-  }
-  
-  #=====================================================================
-  # Return traces of the parameters
-  #=====================================================================
-  list(thhat=tht, xhat=xh, thhattansformed=th)
-}
+
+
 ##############################################################################
 # End of file
 ##############################################################################
