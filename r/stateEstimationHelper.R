@@ -1,63 +1,68 @@
 ##############################################################################
 #
-# Example of particle filtering 
+# Example of particle filtering
 #
 # Subroutine for data generation and particle filtering
 #
-# Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 ##############################################################################
 
+
 ##############################################################################
 # Generate data for LGSS model
 ##############################################################################
 
-generateData <- function(phi, sigmav, sigmae, T, x0) {
+generateData <- function(theta, T, initialState) {
   #
   # Generates data from the LGSS model with parameters (phi,sigmav,sigmae)
   #
   # Inputs:
-  # phi, sigmav, sigmae: the persistence of the state and the 
-  #                      standard deviations of the state innovations and 
+  # theta:               the persistence of the state and the
+  # phi, sigmav, sigmae  standard deviations of the state innovations and
   #                      observation noise.
   #
-  # T and x0:            the no. observations and initial state.
+  # T and initialState:  the no. observations and initial state.
   #
   # Outputs:
-  # x,y:                 the latent state and observations
+  # x, y:                the latent state and observations.
   #
   #
   
-  # Pre-allocate vectors for log-volatility/state (x) 
+  phi <- theta[1] 
+  sigmav <- theta[2]
+  sigmae <- theta[3]
+  
+  # Pre-allocate vectors for log-volatility/state (x)
   # and log-returns/observations (y)
-  x    <- matrix(0, nrow=T+1, ncol=1)
-  y    <- matrix(0, nrow=T+1, ncol=1)
+  x    <- matrix(0, nrow = T + 1, ncol = 1)
+  y    <- matrix(0, nrow = T + 1, ncol = 1)
   
   # Set the initial state
-  x[1] <- x0
+  x[1] <- initialState
   y[1] <- NA
   
   # Simulate the system for each time step
-  for (tt in 2:(T+1)) {
-    x[tt] <- phi  * x[tt-1] + sigmav * rnorm(1)
-    y[tt] <-        x[tt]   + sigmae * rnorm(1)
+  for (t in 2:(T + 1)) {
+    x[t] <- phi * x[t - 1] + sigmav * rnorm(1)
+    y[t] <- x[t] + sigmae * rnorm(1)
   }
   
-  list(x=x, y=y)
+  list(x = x, y = y)
 }
 
 
@@ -65,232 +70,263 @@ generateData <- function(phi, sigmav, sigmae, T, x0) {
 # Fully-adapted particle filter (LGSS)
 ##############################################################################
 
-sm <- function(y, phi, sigmav, sigmae, nPart, T, x0) {
+particleFilter <- function(y, theta, noParticles, initialState) {
   #
   # Fully-adapted particle filter for the linear Gaussian SSM
   #
   # Inputs:
   # y:                   observations from the system for t=1,...,T.
-  #  
-  # phi, sigmav, sigmae: the persistence of the state and the 
-  #                      standard deviations of the state innovations and 
+  #
+  # theta:               the persistence of the state and the
+  # phi, sigmav, sigmae  standard deviations of the state innovations and
   #                      observation noise.
   #
-  # nPart:               number of particles (N)
+  # noParticles:         number of particles (N)
   #
-  # T and xo:            the no. observations and initial state.
+  # initialState:        initial state
   #
   # Outputs:
-  # xh:                  vector with T elements
+  # xHatFiltered:        vector with T elements
   #                      estimates of the filtered state
   #                      for each t=0,1,...,T-1.
   #
-  # ll:                  estimate of the log-likelihood at T-1
+  # logLikelihood:       estimate of the log-likelihood at T-1
   #
   #
+  
+  T <- length(y) - 1
+  phi <- theta[1] 
+  sigmav <- theta[2]
+  sigmae <- theta[3]
   
   #===========================================================
   # Initialise variables
   #===========================================================
-  xhatf <- matrix(x0, nrow=T, ncol=1)
-  p     <- matrix(x0, nrow=nPart, ncol=T+1)
-  w     <- matrix(1/nPart, nrow=nPart, ncol=T+1)
-  v     <- matrix(1, nrow=nPart, ncol=T+1)
-  ll    <- 0
-
+  particles <- matrix(0, nrow = noParticles, ncol = T + 1)
+  ancestorIndices <- matrix(0, nrow = noParticles, ncol = T + 1)
+  weights <- matrix(1, nrow = noParticles, ncol = T + 1)
+  normalisedWeights <- matrix(0, nrow = noParticles, ncol = T + 1)
+  xHatFiltered <- matrix(0, nrow = T, ncol = 1)
+  logLikelihood <- 0
+  
+  ancestorIndices[, 1] <- 1:noParticles
+  particles[ ,1] <- initialState
+  xHatFiltered[ ,1] <- initialState  
+  normalisedWeights[, 1] = 1 / noParticles
+  
   #===========================================================
   # Run main loop
   #===========================================================
-  for (tt in 2:T) {
+  for (t in 2:T) {
     
     #=========================================================
     # Resample ( multinomial )
     #=========================================================
-    nIdx   <- sample(1:nPart, nPart, replace=TRUE, prob = w[,tt-1])
+    newAncestors <- sample(noParticles, replace = TRUE, prob = normalisedWeights[, t - 1])
+    ancestorIndices[, 1:(t - 1)] <- ancestorIndices[newAncestors, 1:(t - 1)]
+    ancestorIndices[, t] <- newAncestors
     
     #=========================================================
     # Propagate
     #=========================================================
-    Delta  <- ( sigmav^(-2) + sigmae^(-2) )^(-1)
-    mup    <- sigmae^(-2) * y[tt] + sigmav^(-2) * phi * p[nIdx,tt-1]
-    p[,tt] <- Delta * mup + rnorm(nPart, 0, sqrt(Delta))
+    part1 <- (sigmav^(-2) + sigmae^(-2))^(-1)
+    part2 <- sigmae^(-2) * y[t]
+    part2 <- part2 + sigmav^(-2) * phi * particles[newAncestors, t - 1]
+    particles[, t] <- part1 * part2 + rnorm(noParticles, 0, sqrt(part1))
     
     #=========================================================
     # Compute weights
     #=========================================================
-    v[,tt] <- dnorm(y[tt+1], phi * p[,tt], sqrt( sigmae^2 + sigmav^2), log=TRUE)
+    yhatMean <- phi * particles[, t]
+    yhatVariance <- sqrt(sigmae^2 + sigmav^2)
+    weights[, t] <- dnorm(y[t + 1], yhatMean, yhatVariance, log = TRUE)
     
     # Rescale log-weights and recover weight
-    vmax   <- max(v[,tt])
-    v[,tt] <- exp(v[,tt] - vmax)
+    maxWeight <- max(weights[, t])
+    weights[, t] <- exp(weights[, t] - maxWeight)
     
     # Normalize the weights
-    w[,tt] <- v[,tt] / sum(v[,tt])
-        
+    sumWeights <- sum(weights[, t])
+    normalisedWeights[, t] <- weights[, t] / sumWeights
+    
     # Estimate the state
-    xhatf[tt] <- mean(p[,tt])
+    xHatFiltered[t] <- mean(particles[, t])
     
     # Estimate the log-likelihood
-    ll        <- ll + vmax + log(sum(v[,tt])) - log(nPart)
+    predictiveLikelihood <- maxWeight + log(sumWeights) - log(noParticles)
+    logLikelihood <- logLikelihood + predictiveLikelihood
     
   }
   
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
-  list(xh = xhatf, ll=ll, p=p, w=w)
+  list(xHatFiltered = xHatFiltered,
+       logLikelihood = logLikelihood,
+       particles = particles,
+       weights = normalisedWeights)
   
 }
+
 
 ###################################################################################
 # Kalman filter (LGSS)
 ###################################################################################
-kf <- function(y, phi, sigmav, sigmae, x0, P0) {
+kalmanFilter <- function(y, theta, initialState, initialStateCovariance) {
   #
   # Kalman filter for the linear Gaussian SSM
   #
   # Inputs:
-  # y:                   observations from the system for t=1,...,T.
-  #  
-  # phi, sigmav, sigmae: the persistence of the state and the 
-  #                      standard deviations of the state innovations and 
-  #                      observation noise.
+  # y:                      observations from the system for t=1,...,T.
   #
-  # x0 and P0:           the initial state and the corresponding covariance
+  # theta:                  the persistence of the state and the
+  # phi, sigmav, sigmae     standard deviations of the state innovations and
+  #                         observation noise.
+  #
+  # initialStat:            the initial state
+  # initialStateCovariance: the covariance of the initial state
   #
   # Outputs:
-  # xh:                  vector with T elements
-  #                      estimates of the filtered state
-  #                      for each t=0,1,...,T-1.
+  # xHatFiltered:           vector with T elements
+  #                         estimates of the filtered state
+  #                         for each t=0,1,...,T-1.
   #
-  # ll:                  estimate of the log-likelihood at T-1
+  # logLikelihood:         estimate of the log-likelihood at T-1
   #
   #
-    
-  T     <- length(y)
-  yhatp <- matrix(x0, nrow=T, ncol=1)
-  xhatf <- matrix(x0, nrow=T, ncol=1)
-  xhatp <- matrix(x0, nrow=T+1, ncol=1)
-  Pp    <- P0
-  ll    <- 0
   
-  # Set parameters 
-  A <- phi
+  T <- length(y)
+  yHatPredicted <- matrix(initialState, nrow = T, ncol = 1)
+  xHatFiltered <- matrix(initialState, nrow = T, ncol = 1)
+  xHatPredicted <- matrix(initialState, nrow = T + 1, ncol = 1)
+  predictedStateCovariance <- initialStateCovariance
+  logLikelihood <- 0
+  
+  # Set parameters
+  A <- theta[1] 
   C <- 1
-  Q <- sigmav^2
-  R <- sigmae^2
+  Q <- theta[2] ^ 2
+  R <- theta[3] ^ 2
   
-  for (tt in 2:T) {
-    
+  for (t in 2:T) {
     # Compute Kalman Gain
-    S <- C * Pp * C + R
-    K <- Pp * C / S
+    S <- C * predictedStateCovariance * C + R
+    kalmanGain <- predictedStateCovariance * C / S
     
     # Compute state estimate
-    yhatp[tt]   <- C * xhatp[tt]
-    xhatf[tt]   <- xhatp[tt] + K * (y[tt] - yhatp[tt])
-    xhatp[tt+1] <- A * xhatf[tt]
+    yHatPredicted[t] <- C * xHatPredicted[t]
+    xHatFiltered[t] <- xHatPredicted[t] + kalmanGain * (y[t] - yHatPredicted[t])
+    xHatPredicted[t + 1] <- A * xHatFiltered[t]
     
     # Update covariance
-    Pf <- Pp - K * S * K
-    Pp <- A * Pf * A + Q
+    filteredStateCovariance <- predictedStateCovariance - kalmanGain * S * kalmanGain
+    predictedStateCovariance <- A * filteredStateCovariance * A + Q
     
     # Estimate loglikelihood (not in the last iteration, to be able to compare with faPF)
-    if ( tt < T ) { 
-      ll = ll + dnorm(y[tt], yhatp[tt], sqrt(S), log=TRUE) 
+    if (t < T) {
+      logLikelihood = logLikelihood + dnorm(y[t], yHatPredicted[t], sqrt(S), log = TRUE)
     }
   }
   
-  list(xh = xhatf, ll=ll)
+  list(xHatFiltered = xHatFiltered, logLikelihood = logLikelihood)
 }
+
 
 ##############################################################################
 # Bootstrap particle filter (SV model)
 ##############################################################################
-sm_sv <- function(y, mu, phi, sigmav, N, T) {
-  
+particleFilterSVmodel <- function(y, theta, noParticles) {
   #
   # Bootstrap particle filter for the stochastic volatility model
   #
   # Inputs:
   # y:                   observations from the system for t=1,...,T.
   #
-  # mu, phi, sigmav:     the mean and persistence of the state and the 
-  #                      standard deviations of the state innovations.
+  # theta:               the mean and persistence of the state and the
+  # mu, phi, sigmav      standard deviations of the state innovations.
   #
-  # nPart:               number of particles (N)
-  #
-  # T and xo:            the no. observations and initial state.
+  # noParticles:         number of particles (N)
   #
   # Outputs:
-  # xh:                  vector with T+1 elements
+  # xHatFiltered:        vector with T+1 elements
   #                      estimates of the smoothed state
   #                      for each t=0,1,...,T.
   #
-  # ll:                  estimate of the log-likelihood at T
+  # logLikelihood:       estimate of the log-likelihood at T
   #
   #
 
+  T <- length(y) - 1
+  mu <- theta[1] 
+  phi <- theta[2]
+  sigmav <- theta[3]  
+    
   #===========================================================
   # Initialise variables
   #===========================================================
-  a     <- matrix(0, nrow=nPart, ncol=T+1)
-  p     <- matrix(0, nrow=nPart, ncol=T+1)
-  w     <- matrix(1/nPart, nrow=nPart, ncol=T+1)
-  v     <- matrix(1 , nrow=nPart, ncol=T+1)
-  ll    <- 0
+  particles <- matrix(0, nrow = noParticles, ncol = T + 1)
+  ancestorIndices <- matrix(0, nrow = noParticles, ncol = T + 1)
+  weights <- matrix(1, nrow = noParticles, ncol = T + 1)
+  normalisedWeights <- matrix(0, nrow = noParticles, ncol = T + 1)
+  xHatFiltered <- matrix(0, nrow = T, ncol = 1)
+  logLikelihood <- 0
   
+  ancestorIndices[, 1] <- 1:noParticles
+  normalisedWeights[, 1] = 1 / noParticles
+
   # Generate initial state
-  p[,1] <- rnorm(nPart, mu, sigmav / sqrt( 1 - phi * phi ))
-  a[,1] <- 1:N
+  particles[, 1] <- rnorm(noParticles, mu, sigmav / sqrt(1 - phi^2))
   
   #===========================================================
   # Run main loop
   #===========================================================
-  for (tt in 2:(T+1)) {
-    
+  for (t in 2:(T + 1)) {
     #=========================================================
     # Resample ( multinomial )
     #=========================================================
-    idx <- sample(1:nPart, nPart, replace=TRUE, prob = w[,tt-1])
+    newAncestors <- sample(noParticles, replace = TRUE, prob = normalisedWeights[, t - 1])
     
     # Resample the ancestory linage
-    a[,1:tt-1]  <- a[idx,1:tt-1]
+    ancestorIndices[, 1:(t - 1)] <- ancestorIndices[newAncestors, 1:(t - 1)]
     
     # Add the most recent ancestors
-    a[,tt]      <- idx
+    ancestorIndices[, t] <- newAncestors
     
     #=========================================================
     # Propagate
     #=========================================================
-    p[,tt] <- mu + phi * (p[idx,tt-1] - mu) + rnorm(nPart, 0, sigmav) 
+    part1 <- mu + phi * (particles[newAncestors, t - 1] - mu)
+    part2 <- rnorm(noParticles, 0, sigmav)
+    particles[, t] <- part1 + part2
     
     #=========================================================
     # Compute weights
     #=========================================================
-    v[,tt] <- dnorm(y[tt-1], 0, exp( p[,tt] / 2 ), log=TRUE)
+    weights[, t] <- dnorm(y[t - 1], 0, exp(particles[, t] / 2), log = TRUE)
     
     # Rescale log-weights and recover weight
-    vmax   <- max(v[,tt])
-    v[,tt] <- exp(v[,tt] - vmax)
+    maxWeight <- max(weights[, t])
+    weights[, t] <- exp(weights[, t] - maxWeight)
     
     # Normalize the weights
-    w[,tt] <- v[,tt] / sum(v[,tt])
+    sumWeights <- sum(weights[, t])
+    normalisedWeights[, t] <- weights[, t] / sumWeights
     
     # Estimate the log-likelihood
-    ll     <- ll + vmax + log(sum(v[,tt])) - log(nPart)
+    logLikelihood <- logLikelihood + maxWeight + log(sumWeights) - log(noParticles)
     
   }
   #===========================================================
   # Return state estimate and log-likelihood estimate
   #===========================================================
-
-  # Sample the state estimate using the weights at tt=T
-  nIdx  <- sample(1:nPart, 1, prob=w[,T])
-  xhatf <- p[ cbind(a[nIdx,], 1:(T+1)) ]  
   
-  list(xh = xhatf, ll=ll)
+  # Sample the state estimate using the weights at t=T
+  ancestorIndex  <- sample(noParticles, 1, prob = normalisedWeights[, T])
+  xHatFiltered <- particles[cbind(ancestorIndices[ancestorIndex, ], 1:(T + 1))]
+  
+  list(xHatFiltered = xHatFiltered, logLikelihood = logLikelihood)
 }
+
 
 ##############################################################################
 # End of file
