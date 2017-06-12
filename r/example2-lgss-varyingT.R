@@ -1,8 +1,7 @@
 ##############################################################################
 #
 # Example of particle Metropolis-Hastings
-# in a stochastic volatility model
-#
+# in a linear Gaussian state space model
 #
 # Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
 #
@@ -22,21 +21,12 @@
 #
 ##############################################################################
 
-# Import helpers
-library("mvtnorm")
-library("Quandl")
-
+# Import helper
 source("stateEstimationHelper.R")
 source("parameterEstimationHelper.R")
 
-# Set the random seed to replicate results in tutorial
-set.seed(10)
-
 # Should the results be loaded from file (to quickly generate plots)
 loadSavedWorkspace <- FALSE
-
-# Save plot to file
-savePlotToFile <- TRUE
 
 
 ##############################################################################
@@ -45,100 +35,96 @@ savePlotToFile <- TRUE
 
 # Here, we use the following model
 #
-# x[tt+1] = phi  * x[tt] + sigma   * v[tt]
-# y[tt]   = beta * exp( xt[tt]/2 ) * e[tt]
+# x[tt+1] = phi   * x[tt] + sigmav * v[tt]
+# y[tt]   = x[tt]         + sigmae * e[tt]
 #
 # where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
 
+# Set the parameters of the model
+phi <- 0.75
+sigmav <- 1.00
+sigmae <- 0.10
+
 # Set the number of time steps to simulate
-T <- 500
+T <- 250
+
+# Set the initial state
+initialState <- 0
 
 
 ##############################################################################
-# Load data
-##############################################################################
-d <-
-  Quandl(
-    "NASDAQOMX/OMXS30",
-    start_date = "2012-01-02",
-    end_date = "2014-01-02",
-    type = "zoo"
-  )
-y <- as.numeric(100 * diff(log(d$"Index Value")))
-
-
-##############################################################################
-# Parameter estimation using PMH
+# PMH settings
 ##############################################################################
 
 # The inital guess of the parameter
-initialTheta <- c(0, 0.9, 0.2)
+initialPhi <- 0.50
 
-# No. particles in the particle filter ( choose noParticles ~ T )
-noParticles <- 500
+# No. particles in the particle filter
+noParticles <- 100
 
 # The length of the burn-in and the no. iterations of PMH ( noBurnInIterations < noIterations )
-noBurnInIterations <- 2500
-noIterations <- 7500
+noBurnInIterations <- 1000
+noIterations <- 5000
 
-# The standard deviation in the random walk proposal
-stepSize <- matrix(
-  c(
-    0.137255431,-0.0016258103,
-    0.0015047492,-0.0016258103,
-    0.0004802053,-0.0009973058,
-    0.0015047492,-0.0009973058,
-    0.0031307062
-  ),
-  ncol = 3,
-  nrow = 3
-)
-stepSize <- 0.8 * stepSize
+# Step size in the random walk proposal
+stepSize <- 0.10
 
-# Run the PMH algorithm
+
+##############################################################################
+# Loop over different data lengths
+##############################################################################
+
+TT <- c(10, 20, 50, 100, 200, 500)
+Tmean <- matrix(0, nrow = length(TT), ncol = 1)
+Tvar <- matrix(0, nrow = length(TT), ncol = 1)
+
 if (loadSavedWorkspace) {
-  load("savedWorkspaces/example4-sv.RData")
+  load("savedWorkspaces/example2-lgss-varyingT.RData")
 } else {
-  res <-
-    particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
+  for (ii in 1:length(TT)) {
+    # Set the random seed to replicate results in tutorial
+    set.seed(10)
+    
+    # Generate data
+    data <- generateData(c(phi, sigmav, sigmae), T, initialState)
+    
+    # Run the PMH algorithm
+    res <-
+      particleMetropolisHastings(
+        data$y,
+        initialPhi,
+        sigmav,
+        sigmae,
+        noParticles,
+        initialState,
+        noIterations,
+        stepSize
+      )
+    
+    Tmean[ii] <- mean(res[noBurnInIterations:noIterations])
+    Tvar[ii]  <- var(res[noBurnInIterations:noIterations])
+  }
 }
 
-##############################################################################
-# Plot the results
-##############################################################################
-
-# Export plot to file
-if (savePlotToFile) {
-  cairo_pdf("figures/example4-sv.pdf",
-            height = 10,
-            width = 8)
-}
-
-makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, noIterations, nPlot)
-
-# Close the plotting device
-if (savePlotToFile) {
-  dev.off()
-}
-
 
 ##############################################################################
-# Compute and save the results
+# Save workspace and print results
 ##############################################################################
 
-# Compute an estimate of the IACT using the first 100 ACF coefficients
-(iact <-
-   1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
-# [1] 13.28575 26.50253 23.31947
-
-# Estimate the covariance of the posterior to tune the proposal
-estCov <- var(resTh)
-
-# Save the workspace to file
+# Save workspace
 if (!loadSavedWorkspace) {
-  save.image("savedWorkspaces/example4-sv.RData")
+  save.image("savedWorkspaces/example2-lgss-varyingT.RData")
 }
 
+# Print the results to screen (no. observations, posterior mean, posterior variance)
+cbind(TT, Tmean, Tvar)
+
+# [1,]  10 0.6569508 0.002316097
+# [2,]  20 0.7711029 0.001531283
+# [3,]  50 0.7904525 0.001496768
+# [4,] 100 0.7396531 0.001706503
+# [5,] 200 0.6375420 0.002312495
+# [6,] 500 0.7361536 0.001653228
 
 ##############################################################################
 # End of file

@@ -90,7 +90,7 @@ particleMetropolisHastings <-
       }
       
       # Compute the acceptance probability
-      priorPart <- dnorm(phiProposed[k], log = TRUE) - part1
+      priorPart <- dnorm(phiProposed[k], log = TRUE)
       priorPart <- priorPart - dnorm(phi[k - 1], log = TRUE)
       likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
       acceptProbability <- exp(priorPart + likelihoodDifference)
@@ -298,6 +298,8 @@ particleMetropolisHastingsSVmodelReparameterised <-
     # theta:               K samples from the parameter posterior.
     #
     #
+      
+    T <- length(y) - 1
     
     #===========================================================
     # Initialise variables
@@ -314,21 +316,21 @@ particleMetropolisHastingsSVmodelReparameterised <-
     
     # Set the initial parameter and estimate the initial log-likelihood
     theta[1, ] <- initialTheta
-    res <- particleFilter_sv(y, theta[1, ], noParticles, T)
-    thetaTranformed[1, ] <- c(theta[1, 1], atanh(theta[1, 2]), log(theta[1, 3]))
+    res <- particleFilterSVmodel(y, theta[1, ], noParticles)
+    thetaTransformed[1, ] <- c(theta[1, 1], atanh(theta[1, 2]), log(theta[1, 3]))
     logLikelihood[1] <- res$logLikelihood
     xHatFiltered[1, ] <- res$xHatFiltered
     
     #=====================================================================
     # Run main loop
     #=====================================================================
-    for (k in 2:niIterations) {
+    for (k in 2:noIterations) {
       # Propose a new parameter
-      thetaTransformedProposed[k, ] <- rmvnorm(1, mean = thetaTranformed[k - 1, ], sigma = stepSize)
+      thetaTransformedProposed[k, ] <- rmvnorm(1, mean = thetaTransformed[k - 1, ], sigma = stepSize)
       
       # Run the particle filter
       thetaProposed[k, ] <- c(thetaTransformedProposed[k, 1], tanh(thetaTransformedProposed[k, 2]), exp(thetaTransformedProposed[k, 3]))
-      res <- particleFilter_sv(y, thetaProposed[k, ], noParticles, T)
+      res <- particleFilterSVmodel(y, thetaProposed[k, ], noParticles)
       xHatFilteredProposed[k, ] <- res$xHatFiltered
       logLikelihoodProposed[k] <- res$logLikelihood
       
@@ -339,7 +341,7 @@ particleMetropolisHastingsSVmodelReparameterised <-
       logPrior <- logPrior1 + logPrior2 + logPrior3
       
       logJacob1 <- log(abs(1 - thetaProposed[k, 2]^2)) -log(abs(1 - theta[k - 1, 2]^2))
-      logJacob3 <- log(abs(thetaProposed[k, 3])) - log(abs(theta[k - 1, 3]))
+      logJacob2 <- log(abs(thetaProposed[k, 3])) - log(abs(theta[k - 1, 3]))
       logJacob <- logJacob1 + logJacob2
       
       acceptProbability <- exp(logPrior + logLikelihoodProposed[k] - logLikelihood[k - 1] + logJacob)
@@ -409,6 +411,154 @@ particleMetropolisHastingsSVmodelReparameterised <-
          xHatFiltered = xHatFiltered,
          thetaTransformed = thetaTransformed)
     }
+
+
+##############################################################################
+# Particle Metropolis-Hastings (SV model)
+##############################################################################
+
+makePlotsParticleMetropolisHastingsSVModel <- function(y, res, noBurnInIterations, noIterations, nPlot) {
+  
+  # Extract the states after burn-in
+  resTh <- res$theta[noBurnInIterations:noIterations, ]
+  resXh <- res$xHatFiltered[noBurnInIterations:noIterations, ]
+  
+  # Estimate the posterior mean and the corresponding standard deviation
+  thhat   <- colMeans(resTh)
+  thhatSD <- apply(resTh, 2, sd)
+  
+  # Estimate the log-volatility and the corresponding standad deviation
+  xhat    <- colMeans(resXh)
+  xhatSD  <- apply(resXh, 2, sd)
+      
+  # Plot the parameter posterior estimate, solid black line indicate posterior mean
+  # Plot the trace of the Markov chain after burn-in, solid black line indicate posterior mean
+  layout(matrix(c(1, 1, 1, 2, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), 5, 3, byrow = TRUE))
+  par(mar = c(4, 5, 0, 0))
+  
+  # Grid for plotting the data and log-volatility
+  gridy <- seq(1, length(y))
+  gridx <- seq(1, length(y) - 1)
+  
+  #---------------------------------------------------------------------------
+  # Observations
+  #---------------------------------------------------------------------------
+  plot(
+    y,
+    col = "#1B9E77",
+    lwd = 1,
+    type = "l",
+    xlab = "time",
+    ylab = "log-returns",
+    ylim = c(-5, 5),
+    bty = "n"
+  )
+  polygon(
+    c(gridy, rev(gridy)),
+    c(y, rep(-5, length(gridy))),
+    border = NA,
+    col = rgb(t(col2rgb("#1B9E77")) / 256, alpha = 0.25)
+  )
+
+  #---------------------------------------------------------------------------
+  # Log-volatility
+  #---------------------------------------------------------------------------  
+  plot(
+    xhat[-1],
+    col = "#D95F02",
+    lwd = 1.5,
+    type = "l",
+    xlab = "time",
+    ylab = "log-volatility estimate",
+    ylim = c(-2, 2),
+    bty = "n"
+  )
+  xhat_upper <- xhat[-1] + 1.96 * xhatSD[-1]
+  xhat_lower <- xhat[-1] - 1.96 * xhatSD[-1]
+    
+  polygon(
+    c(gridx, rev(gridx)),
+    c(xhat_upper, rev(xhat_lower)),
+    border = NA,
+    col = rgb(t(col2rgb("#D95F02")) / 256, alpha = 0.25)
+  )
+  
+  #---------------------------------------------------------------------------
+  # Parameter posteriors
+  #---------------------------------------------------------------------------
+  
+  grid  <- seq(noBurnInIterations, noBurnInIterations + nPlot - 1, 1)
+  parameterNames <- c(expression(mu), expression(phi), expression(sigma[v]))
+  parameterACFnames <- c(expression("ACF of " * mu), expression("ACF of " * phi), expression("ACF of " * sigma[v]))
+  parameterScales <- c(-1, 1, 0.88, 1.0, 0, 0.4)
+  parameterScales <- matrix(parameterScales, nrow = 3, ncol = 2, byrow = TRUE)
+  parameterColors <- c("#7570B3", "#E7298A", "#66A61E")
+  
+  for (k in 1:3) {
+    
+    # Histogram of the posterior
+    hist(
+      resTh[, k],
+      breaks = floor(sqrt(noIterations - noBurnInIterations)),
+      col = rgb(t(col2rgb(parameterColors[k])) / 256, alpha = 0.25),
+      border = NA,
+      xlab = parameterNames[k],
+      ylab = "posterior estimate",
+      main = "",
+      xlim = parameterScales[k,],
+      freq = FALSE
+    )
+    
+    # Add lines for the kernel density estimate of the posterior
+    kde <- density(resTh[, k], kernel = "e", from = parameterScales[k, 1], to = parameterScales[k, 2])
+    lines(kde, lwd = 2, col = parameterColors[k])
+    
+    # Plot the estimate of the posterior mean
+    abline(v = thhat[k], lwd = 1, lty = "dotted")
+    
+    # Plot trace of the Markov chain
+    plot(
+      grid,
+      resTh[1:nPlot, k],
+      col = parameterColors[k],
+      type = "l",
+      xlab = "iteration",
+      ylab = parameterNames[k],
+      ylim = parameterScales[k,],
+      xlim = c(2500, 4000),
+      bty = "n"
+    )
+    polygon(
+      c(grid, rev(grid)),
+      c(resTh[1:nPlot, k], rep(-1, length(grid))),
+      border = NA,
+      col = rgb(t(col2rgb(parameterColors[k])) / 256, alpha = 0.25)
+    )
+    abline(h = thhat[k], lwd = 1, lty = "dotted")
+    
+    # Plot the autocorrelation function
+    acf_res <- acf(resTh[, k], plot = FALSE, lag.max = 100)
+    plot(
+      acf_res$lag,
+      acf_res$acf,
+      col = parameterColors[k],
+      type = "l",
+      xlab = "iteration",
+      ylab = parameterACFnames[k],
+      lwd = 2,
+      ylim = c(-0.2, 1),
+      bty = "n"
+    )
+    polygon(
+      c(acf_res$lag, rev(acf_res$lag)),
+      c(acf_res$acf, rep(0, length(acf_res$lag))),
+      border = NA,
+      col = rgb(t(col2rgb(parameterColors[k])) / 256, alpha = 0.25)
+    )
+    abline(h = 1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
+    abline(h = -1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
+  }
+}
 
 
 ##############################################################################

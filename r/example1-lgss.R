@@ -28,6 +28,12 @@ source("stateEstimationHelper.R")
 # Set the random seed to replicate results in tutorial
 set.seed(10)
 
+# Should the results be loaded from file (to quickly generate plots)
+loadSavedWorkspace <- FALSE
+
+# Save plot to file
+savePlotToFile <- TRUE
+
 
 ##############################################################################
 # Define the model
@@ -51,6 +57,7 @@ T <- 250
 # Set the initial state
 initialState <- 0
 
+
 ##############################################################################
 # Generate data
 ##############################################################################
@@ -58,6 +65,13 @@ initialState <- 0
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 x <- data$x
 y <- data$y
+
+# Export plot to file
+if (savePlotToFile) {
+  cairo_pdf("figures/example1-lgss.pdf",
+            height = 10,
+            width = 8)
+}
 
 # Plot the latent state and observations
 layout(matrix(c(1, 1, 2, 2, 3, 4), 3, 2, byrow = TRUE))
@@ -75,16 +89,28 @@ plot(
   ylim = c(-6, 6),
   bty = "n"
 )
+polygon(c(grid, rev(grid)),
+        c(y, rep(-6, T + 1)),
+        border = NA,
+        col = rgb(t(col2rgb("#1B9E77")) / 256, alpha = 0.25))
+
 
 ###################################################################################
 # State estimation using the particle filter and Kalman filter
 ###################################################################################
 
-# Using noParticles = 20 particles and plot the estimate of the latent state
-noParticles <- 20
-outputPF <- particleFilter(y, c(phi, sigmav, sigmae), noParticles, initialState)
-outputKF <- kalmanFilter(y, c(phi, sigmav, sigmae), initialState, 0.01)
-difference <- outputPF$xHatFiltered - outputKF$xHatFiltered[-(T + 1)]
+if (loadSavedWorkspace) {
+  load("savedWorkspaces/example1-lgss.RData")
+} else {
+  # Using noParticles = 20 particles and plot the estimate of the latent state
+  noParticles <- 20
+  outputPF <-
+    particleFilter(y, c(phi, sigmav, sigmae), noParticles, initialState)
+  outputKF <-
+    kalmanFilter(y, c(phi, sigmav, sigmae), initialState, 0.01)
+  difference <-
+    outputPF$xHatFiltered - outputKF$xHatFiltered[-(T + 1)]
+}
 
 grid <- seq(0, T - 1)
 plot(
@@ -97,18 +123,25 @@ plot(
   ylim = c(-0.1, 0.1),
   bty = "n"
 )
+polygon(
+  c(grid, rev(grid)),
+  c(difference, rep(-0.1, T)),
+  border = NA,
+  col = rgb(t(col2rgb("#7570B3")) / 256, alpha = 0.25)
+)
 
 # Compute bias and MSE
 logBiasMSE <- matrix(0, nrow = 7, ncol = 2)
 gridN <- c(10, 20, 50, 100, 200, 500, 1000)
 
 for (ii in 1:length(gridN)) {
-  pfEstimate <- particleFilter(y, c(phi, sigmav, sigmae), gridN[ii], initialState)
+  pfEstimate <-
+    particleFilter(y, c(phi, sigmav, sigmae), gridN[ii], initialState)
   pfEstimate <- pfEstimate$xHatFiltered
   kfEstimate <- outputKF$xHatFiltered[-(T + 1)]
   
-  logBiasMSE[ii, 1] <-log(mean(abs(pfEstimate - kfEstimate)))
-  logBiasMSE[ii, 2] <-log(mean((pfEstimate - kfEstimate)^2))
+  logBiasMSE[ii, 1] <- log(mean(abs(pfEstimate - kfEstimate)))
+  logBiasMSE[ii, 2] <- log(mean((pfEstimate - kfEstimate) ^ 2))
 }
 
 # Plot the bias and MSE for comparison
@@ -119,8 +152,14 @@ plot(
   type = "l",
   xlab = "no. particles (N)",
   ylab = "log-bias",
-  ylim = c(-7, -3),
+  ylim = c(-7,-3),
   bty = "n"
+)
+polygon(
+  c(gridN, rev(gridN)),
+  c(logBiasMSE[, 1], rep(-7, length(gridN))),
+  border = NA,
+  col = rgb(t(col2rgb("#E7298A")) / 256, alpha = 0.25)
 )
 points(gridN, logBiasMSE[, 1], col = "#E7298A", pch = 19)
 
@@ -132,13 +171,32 @@ plot(
   type = "l",
   xlab = "no. particles (N)",
   ylab = "log-MSE",
-  ylim = c(-12, -6),
+  ylim = c(-12,-6),
   bty = "n"
+)
+polygon(
+  c(gridN, rev(gridN)),
+  c(logBiasMSE[, 2], rep(-12, length(gridN))),
+  border = NA,
+  col = rgb(t(col2rgb("#66A61E")) / 256, alpha = 0.25)
 )
 points(gridN, logBiasMSE[, 2], col = "#66A61E", pch = 19)
 
+# Close the plotting device
+if (savePlotToFile) {
+  dev.off()
+}
+
+
+##############################################################################
+# Compute and save the results
+##############################################################################
+
 # Save the workspace to file
-save("example1-lgss.RData")
+if (!loadSavedWorkspace) {
+  save.image("savedWorkspaces/example1-lgss.RData")
+}
+
 
 ###################################################################################
 # End of file
