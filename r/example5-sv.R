@@ -32,6 +32,12 @@ source("parameterEstimationHelper.R")
 # Set the random seed to replicate results in tutorial
 set.seed(10)
 
+# Should the results be loaded from file (to quickly generate plots)
+loadSavedWorkspace <- TRUE
+
+# Save plot to file
+savePlotToFile <- FALSE
+
 
 ##############################################################################
 # Define the model
@@ -68,25 +74,19 @@ y <- as.numeric(100 * diff(log(d$"Index Value")))
 # The inital guess of the parameter
 initialTheta <- c(0, 0.9, 0.2)
 
-# No. particles in the particle filter ( choose nPart ~ T )
+# No. particles in the particle filter ( choose noParticles ~ T )
 noParticles <- 500
 
-# The length of the burn-in and the no. iterations of PMH ( nBurnIn < nIter )
+# The length of the burn-in and the no. iterations of PMH ( noBurnInIterations < noIterations )
 noBurnInIterations <- 2500
 noIterations <- 7500
 
 # The standard deviation in the random walk proposal
 stepSize <- matrix(
   c(
-    0.104402823,
-    0.008707826,
-    -0.009090245,
-    0.008707826,
-    0.071040325,
-    -0.034589832,
-    -0.009090245,
-    -0.034589832,
-    0.086980437
+    0.041871682,-0.001200581,-0.002706803,-0.001200581,
+    0.054894707,-0.056321320,-0.002706803,-0.056321320,
+    0.087342276
   ),
   ncol = 3,
   nrow = 3
@@ -94,208 +94,49 @@ stepSize <- matrix(
 stepSize <- 0.8 * stepSize
 
 # Run the PMH algorithm
-res <- particleMetropolisHastingsSVmodelReparameterised(y, initialTheta, noParticles, noIterations, stepSize)
+if (loadSavedWorkspace) {
+  load("savedWorkspaces/example5-sv.RData")
+} else {
+  res <-
+    particleMetropolisHastingsSVmodelReparameterised(y, initialTheta, noParticles, noIterations, stepSize)
+}
 
 ##############################################################################
 # Plot the results
 ##############################################################################
 
-# Extract the states after burn-in
-resTh <- res$theta[noBurnInIterations:noIterations, ]
-resXh <- res$xHatFiltered[noBurnInIterations:noIterations, ]
+# Export plot to file
+if (savePlotToFile) {
+  cairo_pdf("figures/example5-sv.pdf", height = 10, width = 8)
+}
 
-# Estimate the KDE of the marginal posteriors
-kde1  <- density(resTh[, 1],
-                 kernel = "e",
-                 from = -1,
-                 to = 1)
-kde2  <- density(resTh[, 2], kernel = "e", to = 1)
-kde3  <- density(resTh[, 3], kernel = "e", from = 0)
+makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, noIterations, nPlot)
 
-# Estimate the posterior mean and the corresponding standard deviation
-thhat   <- colMeans(resTh)
-thhatSD <- apply(resTh, 2, sd)
-
-# Estimate the log-volatility and the corresponding standad deviation
-xhat    <- colMeans(resXh)
-xhatSD  <- apply(resXh, 2, sd)
+# Close the plotting device
+if (savePlotToFile) {
+  dev.off()
+}
 
 
-# Plot the parameter posterior estimate, solid black line indicate posterior mean
-# Plot the trace of the Markov chain after burn-in, solid black line indicate posterior mean
-layout(matrix(c(1, 1, 1, 2, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), 5, 3, byrow = TRUE))
-par(mar = c(4, 5, 0, 0))
-
-# Grid for plotting the data and log-volatility
-gridy <- seq(1, length(y), 1)
-
-plot(
-  y,
-  col = "#1B9E77",
-  lwd = 1,
-  type = "l",
-  xlab = "time",
-  ylab = "log-returns",
-  ylim = c(-5, 5),
-  bty = "n"
-)
-plot(
-  xhat[-1],
-  col = "#D95F02",
-  lwd = 1.5,
-  type = "l",
-  xlab = "time",
-  ylab = "log-volatility estimate",
-  ylim = c(-2, 2),
-  bty = "n"
-)
-
-nPlot <- 1500
-grid  <- seq(noBurnInIterations, noBurnInIterations + nPlot - 1, 1)
-
-# Mu
-hist(
-  resTh[, 1],
-  breaks = floor(sqrt(noIterations - noBurnInIterations)),
-  col = rgb(t(col2rgb("#7570B3")) / 256, alpha = 0.25),
-  border = NA,
-  xlab = expression(mu),
-  ylab = "posterior estimate",
-  main = "",
-  xlim = c(-1, 1),
-  freq = FALSE
-)
-lines(kde1, lwd = 2, col = "#7570B3")
-
-abline(v = thhat[1], lwd = 1, lty = "dotted")
-
-
-plot(
-  grid,
-  resTh[1:nPlot, 1],
-  col = '#7570B3',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression(mu),
-  ylim = c(-1, 1),
-  xlim = c(2500, 4000),
-  bty = "n"
-)
-abline(h = thhat[1], lwd = 1, lty = "dotted")
-
-muACF <- acf(resTh[, 1], plot = FALSE, lag.max = 100)
-plot(
-  muACF$lag,
-  muACF$acf,
-  col = '#7570B3',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression("ACF of " * mu),
-  lwd = 2,
-  ylim = c(-0.5, 1),
-  bty = "n"
-)
-abline(h = 1.96 / sqrt(nIter - noBurnInIterations), lty = "dotted")
-abline(h = -1.96 / sqrt(nIter - noBurnInIterations), lty = "dotted")
-
-# Phi
-hist(
-  resTh[, 2],
-  breaks = floor(sqrt(noIterations - noBurnInIterations)),
-  col = rgb(t(col2rgb("#E7298A")) / 256, alpha = 0.25),
-  border = NA,
-  xlab = expression(phi),
-  ylab = "posterior estimate",
-  main = "",
-  xlim = c(0.88, 1.0),
-  freq = FALSE
-)
-lines(kde2, lwd = 2, col = "#E7298A")
-
-abline(v = thhat[2], lwd = 1, lty = "dotted")
-
-
-plot(
-  grid,
-  resTh[1:nPlot, 2],
-  col = '#E7298A',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression(phi),
-  ylim = c(0.85, 1.0),
-  xlim = c(2500, 4000),
-  bty = "n"
-)
-abline(h = thhat[2], lwd = 1, lty = "dotted")
-
-phiACF <- acf(resTh[, 2], plot = FALSE, lag.max = 100)
-plot(
-  phiACF$lag,
-  phiACF$acf,
-  col = '#E7298A',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression("ACF of " * phi),
-  lwd = 2,
-  ylim = c(-0.5, 1),
-  bty = "n"
-)
-abline(h = 1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
-abline(h = -1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
-
-# Sigma[v]
-hist(
-  resTh[, 3],
-  breaks = floor(sqrt(noIterations - noBurnInIterations)),
-  col = rgb(t(col2rgb("#66A61E")) / 256, alpha = 0.25),
-  border = NA,
-  xlab = expression(sigma[v]),
-  ylab = "posterior estimate",
-  main = "",
-  xlim = c(0.0, 0.4),
-  freq = FALSE
-)
-lines(kde2, lwd = 2, col = "#66A61E")
-
-abline(v = thhat[3], lwd = 1, lty = "dotted")
-
-
-plot(
-  grid,
-  resTh[1:nPlot, 3],
-  col = '#66A61E',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression(sigma[v]),
-  ylim = c(0.0, 0.4),
-  xlim = c(2500, 4000),
-  bty = "n"
-)
-abline(h = thhat[3], lwd = 1, lty = "dotted")
-
-sigmavACF <- acf(resTh[, 3], plot = FALSE, lag.max = 100)
-plot(
-  sigmavACF$lag,
-  sigmavACF$acf,
-  col = '#66A61E',
-  type = "l",
-  xlab = "iteration",
-  ylab = expression("ACF of " * sigma[v]),
-  lwd = 2,
-  ylim = c(-0.5, 1),
-  bty = "n"
-)
-abline(h = 1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
-abline(h = -1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
+##############################################################################
+# Compute and save the results
+##############################################################################
 
 # Compute an estimate of the IACT using the first 100 ACF coefficients
-(iact <- 1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
+(iact <-
+   1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
+# [1] 12.55590 20.63091 16.94274
 
 # Estimate the covariance of the posterior to tune the proposal
-estCov <- var(resTh)
+resThTransformed <-
+  res$thetaTransformed[noBurnInIterations:noIterations,]
+estCov <- var(resThTransformed)
 
 # Save the workspace to file
-save("example5-sv.RData")
+if (!loadSavedWorkspace) {
+  save.image("savedWorkspaces/example5-sv.RData")
+}
+
 
 ##############################################################################
 # End of file
