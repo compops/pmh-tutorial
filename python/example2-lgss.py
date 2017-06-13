@@ -3,32 +3,35 @@
 # Example of particle Metropolis-Hastings
 # in a linear Gaussian state space model
 #
-# Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
-# 
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com >
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 ##############################################################################
 
-# Import some libraries
-import matplotlib.pylab          as plt
-import numpy                     as np
-import stateEstimationHelper     as helpState
-import parameterEstimationHelper as helpParam
+# Import libraries
+import matplotlib.pylab as plt
+import numpy as np
+
+# Import helpers
+from helpers.stateEstimation import generateData, particleFilter
+from helpers.parameterEstimation import particleMetropolisHastings
 
 # Set the random seed
-np.random.seed( 10 );
+np.random.seed(10)
+
 
 ##############################################################################
 # Define the model
@@ -41,43 +44,47 @@ np.random.seed( 10 );
 #
 # where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
 
-# Set the parameters of the model (par[0],par[1],par[2])
-par = np.zeros(3)
-par[0] = 0.75
-par[1] = 1.00
-par[2] = 1.00
+# Set the parameters of the model (phi, sigmav, sigmae)
+theta = np.zeros(3)
+theta[0] = 0.75
+theta[1] = 1.00
+theta[2] = 1.00
 
 # Set the number of time steps to simulate
-T      = 250;
+T = 250
 
 # Set the initial state
-x0     = 0;
+initialState = 0
+
 
 ##############################################################################
 # Generate data
 ##############################################################################
 
-(x, y) = helpState.generateData(par, T, x0)
+x, y = generateData(theta, T, initialState)
+
 
 ##############################################################################
 # Parameter estimation using PMH
 ##############################################################################
 
 # The inital guess of the parameter
-initPar  = 0.50;
+initialPhi = 0.50
 
-# No. particles in the particle filter ( choose nPart ~ T )
-nPart    = 500;
+# No. particles in the particle filter ( choose noParticles ~ T )
+noParticles = 500
 
-# The length of the burn-in and the no. iterations of PMH ( nBurnIn < nRuns )
-nBurnIn  = 1000;
-nRuns    = 5000;
+# The length of the burn-in and the no. iterations of PMH 
+# ( noBurnInIterations < noIterations )
+noBurnInIterations = 1000
+noIterations = 5000
 
 # The standard deviation in the random walk proposal
-stepSize = 0.10;
+stepSize = 0.10
 
 # Run the PMH algorithm
-res = helpParam.pmh(y,initPar,par,nPart,T,x0,helpState.pf,nRuns,stepSize)
+res = particleMetropolisHastings(y, initialPhi, theta, noParticles, initialState,
+                                 particleFilter, noIterations, stepSize)
 
 
 ##############################################################################
@@ -86,17 +93,24 @@ res = helpParam.pmh(y,initPar,par,nPart,T,x0,helpState.pf,nRuns,stepSize)
 
 # Plot the parameter posterior estimate
 # Solid black line indicate posterior mean
-plt.subplot(2,1,1);
-plt.hist(res[nBurnIn:nRuns], np.floor(np.sqrt(nRuns-nBurnIn)), normed=1, facecolor='#7570B3')
-plt.xlabel("par[0]"); plt.ylabel("posterior density estimate")
-plt.axvline( np.mean(res[nBurnIn:nRuns]), linewidth=2, color = 'k' )
+plt.subplot(2, 1, 1)
+plt.hist(res[noBurnInIterations:noIterations], np.floor(
+    np.sqrt(noIterations - noBurnInIterations)), normed=1, facecolor='#7570B3')
+plt.xlabel("par[0]")
+plt.ylabel("posterior density estimate")
+plt.axvline(np.mean(res[noBurnInIterations:noIterations]),
+            linewidth=2, color='k')
 
 # Plot the trace of the Markov chain after burn-in
 # Solid black line indicate posterior mean
-plt.subplot(2,1,2);
-plt.plot(np.arange(nBurnIn,nRuns,1),res[nBurnIn:nRuns],color = '#E7298A')
-plt.xlabel("iteration"); plt.ylabel("par[0]")
-plt.axhline( np.mean(res[nBurnIn:nRuns]), linewidth=2, color = 'k' )
+plt.subplot(2, 1, 2)
+plt.plot(np.arange(noBurnInIterations, noIterations, 1),
+         res[noBurnInIterations:noIterations], color='#E7298A')
+plt.xlabel("iteration")
+plt.ylabel("par[0]")
+plt.axhline(np.mean(res[noBurnInIterations:noIterations]),
+            linewidth=2, color='k')
+
 
 ##############################################################################
 # End of file

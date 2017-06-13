@@ -126,6 +126,13 @@ if (savePlotToFile) {
 # Compute and save the results
 ##############################################################################
 
+# Print the estimate of the posterior mean and standard deviation
+print(thhat)
+print(thhatSD)
+
+#[1] -0.1087619  0.9668493  0.1593125
+#[1] 0.24976843 0.02232583 0.05356500
+
 # Compute an estimate of the IACT using the first 100 ACF coefficients
 (iact <-
    1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
