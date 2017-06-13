@@ -192,6 +192,18 @@ if (savePlotToFile) {
 # Compute and save the results
 ##############################################################################
 
+# Print a table (no. particles, log-bias, log-mse)
+print(t(rbind(gridN, t(logBiasMSE))))
+
+# gridN                     
+# [1,]    10 -3.696997  -6.938594
+# [2,]    20 -3.964671  -7.493297
+# [3,]    50 -4.567552  -8.718346
+# [4,]   100 -4.850363  -9.294468
+# [5,]   200 -5.192173  -9.905719
+# [6,]   500 -5.668407 -10.866745
+# [7,]  1000 -6.077648 -11.671646
+
 # Save the workspace to file
 if (!loadSavedWorkspace) {
   save.image("savedWorkspaces/example1-lgss.RData")

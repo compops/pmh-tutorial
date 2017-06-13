@@ -81,12 +81,13 @@ Tvar <- matrix(0, nrow = length(TT), ncol = 1)
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example2-lgss-varyingT.RData")
 } else {
-  for (ii in 1:length(TT)) {
+  for (i in 1:length(TT)) {
+    
     # Set the random seed to replicate results in tutorial
     set.seed(10)
     
     # Generate data
-    data <- generateData(c(phi, sigmav, sigmae), T, initialState)
+    data <- generateData(c(phi, sigmav, sigmae), TT[i], initialState)
     
     # Run the PMH algorithm
     res <-
@@ -101,8 +102,8 @@ if (loadSavedWorkspace) {
         stepSize
       )
     
-    Tmean[ii] <- mean(res[noBurnInIterations:noIterations])
-    Tvar[ii]  <- var(res[noBurnInIterations:noIterations])
+    Tmean[i] <- mean(res[noBurnInIterations:noIterations])
+    Tvar[i]  <- var(res[noBurnInIterations:noIterations])
   }
 }
 
@@ -119,12 +120,12 @@ if (!loadSavedWorkspace) {
 # Print the results to screen (no. observations, posterior mean, posterior variance)
 cbind(TT, Tmean, Tvar)
 
-# [1,]  10 0.6569508 0.002316097
-# [2,]  20 0.7711029 0.001531283
-# [3,]  50 0.7904525 0.001496768
-# [4,] 100 0.7396531 0.001706503
-# [5,] 200 0.6375420 0.002312495
-# [6,] 500 0.7361536 0.001653228
+# [1,]  10 0.5955020 0.0399332238
+# [2,]  20 0.7943218 0.0127682838
+# [3,]  50 0.7649620 0.0089581720
+# [4,] 100 0.7269762 0.0060643002
+# [5,] 200 0.6960883 0.0026939445
+# [6,] 500 0.7185719 0.0009992732
 
 ##############################################################################
 # End of file
