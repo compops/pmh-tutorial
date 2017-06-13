@@ -25,7 +25,11 @@ These are the main script files that implement the various algorithms discussed 
 Supporting files (helpers/)
 --------------
 **stateEstimation.py**
-Implementes data generation for the LGSS model (generateData), the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
+Implements data generation for the LGSS model (generateData), the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
 
 **parameterEstimation.py**
-Implementes the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel).
+Implements the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel). 
+
+Adapting the code for another model
+--------------
+See the discussion in *README.MD* in the directory *r/*.
