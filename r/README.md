@@ -37,12 +37,13 @@ These are some additional files to recreate some extra results discussed in the 
 
 Supporting files (helpers/)
 --------------
-**stateEstimation.R**
-Implements data generation for the LGSS model (generateData), the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
+**dataGeneration.R** Generates data from a LGSS model.
 
-**parameterEstimation.R**
-Implements the PMH algorithm for the LGSS model (particleMetropolisHastings), the SV model (particleMetropolisHastingsSVModel) and the reparameterised SV model (particleMetropolisHastingsSVModelReparameterised). Moreover, a script (makePlotsParticleMetropolisHastingsSVModel) is included to generate the Figures presented in the paper using the output of the PMH algorithm.
+**parameterEstimation.R** Implements the PMH algorithm for the LGSS model (particleMetropolisHastings), the SV model (particleMetropolisHastingsSVModel) and the reparameterised SV model (particleMetropolisHastingsSVModelReparameterised).
 
+**stateEstimation.R** Implements the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
+
+**plotting.R** Generate the gigures presented in the paper using the output of the PMH algorithm for the SV model.
 
 Saved results (savedWorkspaces/ and figures/)
 --------------

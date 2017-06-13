@@ -1,8 +1,8 @@
 ##############################################################################
 #
-# Example of particle Metropolis-Hastings
+# Particle Metropolis-Hastings for LGSS and SV models
 #
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

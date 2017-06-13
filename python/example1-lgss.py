@@ -1,9 +1,9 @@
 ##############################################################################
 #
-# Example of particle filtering
-# in a linear Gaussian state space model
+# Example of state estimation in a LGSS model 
+# using particle filters and Kalman filters
 #
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ import matplotlib.pylab as plt
 import numpy as np
 
 # Import helpers
-from helpers.stateEstimation import generateData, particleFilter, kalmanFilter
+from helpers.dataGeneration import generateData
+from helpers.stateEstimation import particleFilter, kalmanFilter
 
 # Set the random seed to replicate results in tutorial
 np.random.seed(10)
@@ -38,16 +39,16 @@ np.random.seed(10)
 
 # Here, we use the following model
 #
-# x[tt+1] = phi   * x[tt] + sigmav * v[tt]
-# y[tt]   = x[tt]         + sigmae * e[tt]
+# x[t + 1] = phi * x[t] + sigmav * v[t]
+# y[t] = x[t] + sigmae * e[t]
 #
-# where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
+# where v[t] ~ N(0, 1) and e[t] ~ N(0, 1)
 
 # Set the parameters of the model (phi, sigmav, sigmae)
 theta = np.zeros(3)
 theta[0] = 0.75
 theta[1] = 1.00
-theta[2] = 1.00
+theta[2] = 0.10
 
 # Set the number of time steps to simulate
 T = 250

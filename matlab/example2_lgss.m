@@ -1,10 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Example of PMH in a LGSS model
+% Example of particle Metropolis-Hastings in a LGSS model.
 %
-% Main script
-%
-% Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
+% Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -22,86 +20,100 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Set random seed
+rng(0)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Define the model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Here, we use the following model
 %
-% x[tt+1] = phi  * x[tt] + sigmav * v[tt]
-% y[tt]   = x[tt]        + sigmae * e[tt]
+% x[t + 1] = phi * x[t] + sigmav * v[t]
+% y[t] = x[t] + sigmae * e[t]
 %
-% where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
+% where v[t] ~ N(0, 1) and e[t] ~ N(0, 1)
 
 % Set the parameters of the model
-phi    = 0.75;
+phi = 0.75;
 sigmav = 1.00;
 sigmae = 0.10;
+theta = [phi sigmav sigmae];
 
 % Set the number of time steps to simulate
-T      = 500;
+T = 250;
 
 % Set the initial state
-x0     = 0;
+initialState = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[x,y] = generateData(phi,sigmav,sigmae,T,x0);
+[x, y] = generateData(theta, T, initialState);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameter estimation using PMH
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The inital guess of the parameter
-initPar  = 0.50;
+initialPhi = 0.50;
 
-% No. particles in the particle filter ( choose nPart ~ T )
-nPart    = 100;
+% No. particles in the particle filter (choose noParticles ~ T)
+noParticles = 100;
 
-% The length of the burn-in and the no. iterations of PMH ( nBurnIn < nRuns )
-nBurnIn  = 1000;
-nRuns    = 5000;
+% The length of the burn-in and the no. iterations of PMH 
+% (noBurnInIterations < noIterations)
+noBurnInIterations = 1000;
+noIterations = 5000;
 
 % The standard deviation in the random walk proposal
 stepSize = 0.10;
 
 % Run the PMH algorithm
-res = pmh(y,initPar,sigmav,sigmae,nPart,T,x0,nRuns,stepSize);
+res = particleMetropolisHastings(y, initialPhi, [sigmav sigmae],...
+                                 noParticles, initialState,...
+                                 noIterations, stepSize);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+noBins = floor(sqrt(noIterations - noBurnInIterations));
+grid = noBurnInIterations:noIterations;
+resPhi = res(noBurnInIterations:noIterations);
+
 % Plot the parameter posterior estimate
 % Solid black line indicate posterior mean
-subplot(3,1,1);
-hist(res(nBurnIn:nRuns), floor(sqrt(nRuns-nBurnIn)) );
-xlabel('phi'); ylabel('posterior density estimate');
+subplot(3, 1, 1);
+hist(resPhi, noBins);
+xlabel('phi'); 
+ylabel('posterior density estimate');
 
-h = findobj(gca,'Type','patch');
-set(h,'FaceColor',[117 112 179]/256,'EdgeColor','w');
+h = findobj(gca, 'Type', 'patch');
+set(h, 'FaceColor', [117 112 179] / 256, 'EdgeColor', 'w');
 
 hold on;
-plot([1 1] * mean(res(nBurnIn:nRuns)), [0 500], 'LineWidth', 1);
+plot([1 1] * mean(resPhi), [0 200], 'LineWidth', 3);
 hold off;
 
 % Plot the trace of the Markov chain after burn-in
 % Solid black line indicate posterior mean
-subplot(3,1,2);
-plot(nBurnIn:nRuns,res(nBurnIn:nRuns), 'Color', [117 112 179]/256, 'LineWidth', 1);
-xlabel('iteration'); ylabel('phi');
+subplot(3, 1, 2);
+plot(grid, resPhi, 'Color', [117 112 179] / 256, 'LineWidth', 1);
+xlabel('iteration'); 
+ylabel('phi');
 
 hold on;
-plot([nBurnIn,nRuns], [1 1] * mean(res(nBurnIn:nRuns)), 'k', 'LineWidth', 1);
+plot([grid(1) grid(end)], [1 1] * mean(resPhi), 'k', 'LineWidth', 3);
 hold off;
 
 % Plot ACF of the Markov chain after burn-in
-subplot(3,1,3);
-macf = acf( res(nBurnIn:nRuns), 100, 0 );
-plot(2:101, macf, 'Color', [117 112 179]/256, 'LineWidth', 2);
-xlabel('lag'); ylabel('ACF of phi');
+subplot(3, 1, 3);
+[acf, lags] = xcorr(resPhi - mean(resPhi), 100, 'coeff');
+stem(lags(101:200), acf(101:200), 'Color', [117 112 179] / 256, 'LineWidth', 2);
+xlabel('lag'); 
+ylabel('ACF of phi');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End of file

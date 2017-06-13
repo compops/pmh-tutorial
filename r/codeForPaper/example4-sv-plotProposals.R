@@ -1,11 +1,10 @@
 ##############################################################################
 #
-# Example of particle Metropolis-Hastings
-# in a stochastic volatility model
-# Plotting the proposal and posteriors
+# Ugly code to plot the estimate of the posterior distribution and the 
+# proposal distribution adapted from a pilot run of particle 
+# Metropolis-Hastings.
 #
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -168,7 +167,7 @@ foo3 <- kde2d(resTh[, 2], resTh[, 3], n = 50)
 ##############################################################################
 
 if (savePlotToFile) {
-cairo_pdf("figures/example4-sv-plotProposals.pdf",
+cairo_pdf("../figures/example4-sv-plotProposals.pdf",
           height = 6,
           width = 8)
 }

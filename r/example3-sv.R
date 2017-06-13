@@ -1,10 +1,8 @@
 ##############################################################################
 #
-# Example of particle Metropolis-Hastings
-# in a stochastic volatility model
+# Example of particle Metropolis-Hastings in a stochastic volatility model
 #
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +26,7 @@ library("Quandl")
 # Import helpers
 source("helpers/stateEstimation.R")
 source("helpers/parameterEstimation.R")
+source("helpers/plotting.R")
 
 # Set the random seed to replicate results in tutorial
 set.seed(10)
@@ -36,22 +35,7 @@ set.seed(10)
 loadSavedWorkspace <- FALSE
 
 # Save plot to file
-savePlotToFile <- TRUE
-
-
-##############################################################################
-# Define the model
-##############################################################################
-
-# Here, we use the following model
-#
-# x[tt+1] = phi  * x[tt] + sigma   * v[tt]
-# y[tt]   = beta * exp( xt[tt]/2 ) * e[tt]
-#
-# where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
-
-# Set the number of time steps to simulate
-T <- 500
+savePlotToFile <- FALSE
 
 
 ##############################################################################
@@ -123,8 +107,7 @@ print(thhatSD)
 #[1] 0.37048000 0.02191359 0.05595271
 
 # Compute an estimate of the IACT using the first 100 ACF coefficients
-(iact <-
-   1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
+(iact <- 1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
 # [1] 135.19084  85.98935  65.80120
 
 # Estimate the covariance of the posterior to tune the proposal
