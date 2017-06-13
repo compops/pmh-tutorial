@@ -23,7 +23,7 @@
 ##############################################################################
 
 # Import helper
-source("stateEstimationHelper.R")
+source("../helpers/stateEstimation.R")
 
 # Set the random seed to replicate results in tutorial
 set.seed(10)
@@ -67,7 +67,7 @@ y <- data$y
 
 # Export plot to file
 if (savePlotToFile) {
-  cairo_pdf("figures/lgss-data.pdf",
+  cairo_pdf("../figures/lgss-data.pdf",
             height = 3,
             width = 8)
 }

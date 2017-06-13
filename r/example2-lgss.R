@@ -21,9 +21,9 @@
 #
 ##############################################################################
 
-# Import helper
-source("stateEstimationHelper.R")
-source("parameterEstimationHelper.R")
+# Import helpers
+source("helpers/stateEstimation.R")
+source("helpers/parameterEstimation.R")
 
 # Set the random seed to replicate results in tutorial
 set.seed(10)

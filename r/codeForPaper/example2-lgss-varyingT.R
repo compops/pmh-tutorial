@@ -22,8 +22,8 @@
 ##############################################################################
 
 # Import helper
-source("stateEstimationHelper.R")
-source("parameterEstimationHelper.R")
+source("../helpers/stateEstimation.R")
+source("../helpers/parameterEstimation.R")
 
 # Should the results be loaded from file (to quickly generate plots)
 loadSavedWorkspace <- FALSE
@@ -79,7 +79,7 @@ Tmean <- matrix(0, nrow = length(TT), ncol = 1)
 Tvar <- matrix(0, nrow = length(TT), ncol = 1)
 
 if (loadSavedWorkspace) {
-  load("savedWorkspaces/example2-lgss-varyingT.RData")
+  load("../savedWorkspaces/example2-lgss-varyingT.RData")
 } else {
   for (i in 1:length(TT)) {
     
@@ -114,7 +114,7 @@ if (loadSavedWorkspace) {
 
 # Save workspace
 if (!loadSavedWorkspace) {
-  save.image("savedWorkspaces/example2-lgss-varyingT.RData")
+  save.image("../savedWorkspaces/example2-lgss-varyingT.RData")
 }
 
 # Print the results to screen (no. observations, posterior mean, posterior variance)

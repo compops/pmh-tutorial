@@ -163,7 +163,7 @@ def particleMetropolisHastingsSVModel(y, initialTheta, noParticles, particleFilt
 
     # Set the initial parameter and estimate the initial log-likelihood
     theta[0, :] = initialTheta;
-    (xHatFiltered[0, :], logLikelihood[0]) = particleFilter(y, theta[0, :], noParticles, T);
+    (xHatFiltered[0, :], logLikelihood[0]) = particleFilter(y, theta[0, :], noParticles);
 
     #=====================================================================
     # Run main loop

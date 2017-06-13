@@ -23,7 +23,7 @@
 ##############################################################################
 
 # Import helper
-source("stateEstimationHelper.R")
+source("helpers/stateEstimation.R")
 
 # Set the random seed to replicate results in tutorial
 set.seed(10)
