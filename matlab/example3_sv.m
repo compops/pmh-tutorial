@@ -34,7 +34,7 @@ d = Quandl.get('NASDAQOMX/OMXS30',...
                'type', 'data'); 
 
 y = 100 * diff(log(flipud(d(:, 2))));
-
+T = length(y)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameter estimation using PMH
