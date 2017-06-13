@@ -20,6 +20,8 @@
 #
 ##############################################################################
 
+from __future__ import print_function, division
+
 import numpy as np
 from numpy.random import randn, uniform, multivariate_normal
 from scipy.stats import gamma, norm
