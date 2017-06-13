@@ -303,7 +303,7 @@ def particleFilterSVmodel(y, theta, noParticles):
     #=====================================================================
 
     # Sample the state estimate using the weights at t=T
-    ancestorIndex = choice(nPart, 1, p=w[:, T - 1])
+    ancestorIndex = choice(noParticles, 1, p=normalisedWeights[:, T - 1])
     stateTrajectory = particles[ancestorIndices[ancestorIndex, T - 1].astype(int), :]
 
     return stateTrajectory, logLikelihood

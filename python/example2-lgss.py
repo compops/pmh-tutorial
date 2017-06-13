@@ -33,9 +33,9 @@ from helpers.parameterEstimation import particleMetropolisHastings
 np.random.seed(10)
 
 
-##############################################################################
+#=============================================================================
 # Define the model
-##############################################################################
+#=============================================================================
 
 # Here, we use the following model
 #
@@ -57,16 +57,16 @@ T = 250
 initialState = 0
 
 
-##############################################################################
+#=============================================================================
 # Generate data
-##############################################################################
+#=============================================================================
 
 x, y = generateData(theta, T, initialState)
 
 
-##############################################################################
+#=============================================================================
 # Parameter estimation using PMH
-##############################################################################
+#=============================================================================
 
 # The inital guess of the parameter
 initialPhi = 0.50
@@ -87,29 +87,29 @@ res = particleMetropolisHastings(y, initialPhi, theta, noParticles, initialState
                                  particleFilter, noIterations, stepSize)
 
 
-##############################################################################
+#=============================================================================
 # Plot the results
-##############################################################################
+#=============================================================================
+
+noBins = int(np.floor(np.sqrt(noIterations - noBurnInIterations)))
+grid = np.arange(noBurnInIterations, noIterations, 1)
+resPhi = res[noBurnInIterations:noIterations]
 
 # Plot the parameter posterior estimate
 # Solid black line indicate posterior mean
 plt.subplot(2, 1, 1)
-plt.hist(res[noBurnInIterations:noIterations], np.floor(
-    np.sqrt(noIterations - noBurnInIterations)), normed=1, facecolor='#7570B3')
-plt.xlabel("par[0]")
+plt.hist(resPhi, noBins, normed=1, facecolor='#7570B3')
+plt.xlabel("phi")
 plt.ylabel("posterior density estimate")
-plt.axvline(np.mean(res[noBurnInIterations:noIterations]),
-            linewidth=2, color='k')
+plt.axvline(np.mean(resPhi), color='k')
 
 # Plot the trace of the Markov chain after burn-in
 # Solid black line indicate posterior mean
 plt.subplot(2, 1, 2)
-plt.plot(np.arange(noBurnInIterations, noIterations, 1),
-         res[noBurnInIterations:noIterations], color='#E7298A')
+plt.plot(grid, resPhi, color='#E7298A')
 plt.xlabel("iteration")
-plt.ylabel("par[0]")
-plt.axhline(np.mean(res[noBurnInIterations:noIterations]),
-            linewidth=2, color='k')
+plt.ylabel("phi")
+plt.axhline(np.mean(resPhi), color='k')
 
 
 ##############################################################################
