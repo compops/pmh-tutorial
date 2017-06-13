@@ -20,6 +20,8 @@
 #
 ##############################################################################
 
+from __future__ import print_function, division
+
 # Import libraries
 import matplotlib.pylab as plt
 import numpy as np
