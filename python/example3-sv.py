@@ -75,14 +75,14 @@ resTheta = theta[noBurnInIterations:noIterations, :]
 plt.figure(1)
 
 ## Plot the log-returns
-plt.subplot(5, 3, (1, 2, 3))
+plt.subplot(5, 3, (1, 3))
 plt.plot(y, color='#1B9E77', linewidth=1.5)
 plt.xlabel("time")
 plt.ylabel("log-return")
 
 
 ## Plot the log-volatility estimate
-plt.subplot(5, 3, (4, 5, 6))
+plt.subplot(5, 3, (4, 6))
 plt.plot(np.mean(resXhat, axis=0), color='#D95F02', linewidth=1.5)
 plt.xlabel("time")
 plt.ylabel("log-volatility estimate")
@@ -114,8 +114,8 @@ macf = np.correlate(detrended_trace, detrended_trace, mode='full')
 macf = macf[macf.size/2:]
 macf = macf[0:100]
 macf /= macf[0]
-grid = range(len(macf))
-plt.plot(grid, macf, color='#7570B3')
+grid_acf = range(len(macf))
+plt.plot(grid_acf, macf, color='#7570B3')
 plt.xlabel("lag")
 plt.ylabel("ACF of mu")
 
@@ -145,8 +145,8 @@ macf = np.correlate(detrended_trace, detrended_trace, mode='full')
 macf = macf[macf.size/2:]
 macf = macf[0:100]
 macf /= macf[0]
-grid = range(len(macf))
-plt.plot(grid, macf, color='#E7298A')
+grid_acf = range(len(macf))
+plt.plot(grid_acf, macf, color='#E7298A')
 plt.xlabel("lag")
 plt.ylabel("ACF of phi")
 
@@ -175,8 +175,8 @@ macf = np.correlate(detrended_trace, detrended_trace, mode='full')
 macf = macf[macf.size/2:]
 macf = macf[0:100]
 macf /= macf[0]
-grid = range(len(macf))
-plt.plot(grid, macf, color='#66A61E')
+grid_acf = range(len(macf))
+plt.plot(grid_acf, macf, color='#66A61E')
 plt.xlabel("lag")
 plt.ylabel("ACF of sigmav")
 
