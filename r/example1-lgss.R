@@ -1,10 +1,9 @@
 ##############################################################################
 #
-# Example of fully-adapted particle filtering
-# in a linear Gaussian state space model
+# Example of state estimation in a LGSS model 
+# using particle filters and Kalman filters
 #
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +22,7 @@
 ##############################################################################
 
 # Import helper
+source("helpers/dataGeneration.R")
 source("helpers/stateEstimation.R")
 
 # Set the random seed to replicate results in tutorial
@@ -32,7 +32,7 @@ set.seed(10)
 loadSavedWorkspace <- FALSE
 
 # Save plot to file
-savePlotToFile <- TRUE
+savePlotToFile <- FALSE
 
 
 ##############################################################################
@@ -41,10 +41,10 @@ savePlotToFile <- TRUE
 
 # Here, we use the following model
 #
-# x[tt+1] = phi   * x[tt] + sigmav * v[tt]
-# y[tt]   = x[tt]         + sigmae * e[tt]
+# x[t + 1] = phi * x[t] + sigmav * v[t]
+# y[t] = x[t] + sigmae * e[t]
 #
-# where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
+# where v[t] ~ N(0, 1) and e[t] ~ N(0, 1)
 
 # Set the parameters of the model
 phi <- 0.75

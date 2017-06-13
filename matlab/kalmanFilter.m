@@ -1,10 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Example of particle filtering in a LGSS model
+% Kalman filtering for LGSS model
 %
-% Bootstrap particle filter
-%
-% Copyright (C) 2015 Johan Dahlin < johan.dahlin (at) liu.se >
+% Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -22,37 +20,37 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function xhatf = lgss_kf(y,phi,sigmav,sigmae,T,x0,P0)
+function xHatFiltered = kalmanFilter(y, theta, initialState, initialStateCovariance)
+
+  T = length(y);
 
   % Initalise variables
-  xhatf = x0 * ones( T, 1);
-  xhatp = x0 * ones( T, 1);
-  Pp    = P0;
+  xHatFiltered = initialState * ones( T, 1);
+  xHatPredicted = initialState * ones( T, 1);
+  predictiveCovariance = initialStateCovariance;
   
-  A = phi;
+  A = theta(1);
   C = 1;
-  Q = sigmav^2;
-  R = sigmae^2;
+  Q = theta(2)^2;
+  R = theta(3)^2;
       
   %===========================================================
   % Run main loop
   %===========================================================
-  for tt = 1:T
+  for t = 1:T
 
     % Compute Kalman Gain
-    S = C * Pp * C + R;
-    K = Pp * C / S;
+    S = C * predictiveCovariance * C + R;
+    kalmanGain = predictiveCovariance * C / S;
     
     % Compute state estimate
-    xhatf(tt)   = xhatp(tt) + K * ( y(tt) - C * xhatp(tt) );
-    xhatp(tt+1) = A * xhatf(tt); 
+    xHatFiltered(t)   = xHatPredicted(t) + kalmanGain * ( y(t) - C * xHatPredicted(t) );
+    xHatPredicted(t+1) = A * xHatFiltered(t); 
     
     % Update covariance
-    Pf = Pp - K * S * K;
-    Pp = A * Pf * A + Q;
-    
+    filteredCovariance = predictiveCovariance - kalmanGain * S * kalmanGain;
+    predictiveCovariance = A * filteredCovariance * A + Q;
   end
-  
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

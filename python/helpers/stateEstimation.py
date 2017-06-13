@@ -1,10 +1,8 @@
 ##############################################################################
 #
-# Example of particle filtering
+# State estimation in LGSS and SV models using Kalman and particle filters.
 #
-# Subroutine for data generation and particle filtering
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,45 +21,68 @@
 ##############################################################################
 
 import numpy as np
-
 from numpy.random import randn, choice
 from scipy.stats import norm
 
 
 ##############################################################################
-##############################################################################
+##########################################################################
 #
-# Generates data from the LGSS model with parameters (phi,sigmav,sigmae)
+# Kalman filter for the linear Gaussian SSM
 #
 # Inputs:
-# theta:               the persistence of the state theta[0] and the
-#                      standard deviations of the state noise theta[1] and
-#                      observation noise theta[2].
+# y:                     observations from the system for t=1,...,T.
 #
-# T and initialState:  the no. observations and initial state.
+# theta:                 the persistence of the state theta[0] and the
+#                        standard deviations of the state noise theta[1] and
+#                        observation noise theta[2].
+#
+# initialState           the initial state 
+#
+# initialStateCovariance the initial state  covariance
 #
 # Outputs:
-# x, y:                the latent state and observations
+# xHatFiltered:          vector with T elements
+#                        estimates of the filtered state
+#                        for each t=0,1,...,T-1.
 #
+# loglikelihood:         estimate of the log-likelihood at T-1
 #
+##########################################################################
 ##############################################################################
-##############################################################################
 
-def generateData(theta, T, initialState):
-    # Pre-allocate vectors for state (x)
-    # and measurements (y)
-    x = np.zeros(T + 1)
-    y = np.zeros(T)
+def kalmanFilter(y, theta, initialState, initialStateCovariance):
 
-    # Set the initial state
-    x[0] = initialState
+    T = len(y)
 
-    # Simulate for each time step
-    for t in range(1, T):
-        x[t] = theta[0] * x[t - 1] + theta[1] * randn()
-        y[t] = x[t] + theta[2] * randn()
+    # Initalise variables
+    predictiveCovariance = initialStateCovariance
+    xHatPredicted = initialState * np.ones((T + 1, 1))
+    xHatFiltered = initialState * np.ones((T, 1))
 
-    return(x, y)
+    # Set parameters
+    A = theta[0]
+    C = 1
+    Q = theta[1]**2
+    R = theta[2]**2
+
+    # Run main loop
+    for t in range(0, T):
+
+        # Calculate the Kalman Gain
+        S = C * predictiveCovariance * C + R
+        kalmanGain = predictiveCovariance * C / S
+
+        # Compute the state estimate
+        yHatPredicted = C * xHatPredicted[t]
+        xHatFiltered[t] = xHatPredicted[t] + kalmanGain * (y[t - 1] - yHatPredicted)
+        xHatPredicted[t + 1] = A * xHatFiltered[t]
+
+        # Update covariance
+        filteredCovariance = predictiveCovariance - kalmanGain * S * kalmanGain
+        predictiveCovariance = A * filteredCovariance * A + Q
+
+    return xHatFiltered
 
 
 ##############################################################################
@@ -154,66 +175,6 @@ def particleFilter(y, theta, noParticles, initialState):
     # Return state estimate and log-likelihood estimate
     #=====================================================================
     return xHatFiltered, logLikelihood
-
-
-##############################################################################
-##########################################################################
-#
-# Kalman filter for the linear Gaussian SSM
-#
-# Inputs:
-# y:                     observations from the system for t=1,...,T.
-#
-# theta:                 the persistence of the state theta[0] and the
-#                        standard deviations of the state noise theta[1] and
-#                        observation noise theta[2].
-#
-# initialState           the initial state 
-#
-# initialStateCovariance the initial state  covariance
-#
-# Outputs:
-# xHatFiltered:          vector with T elements
-#                        estimates of the filtered state
-#                        for each t=0,1,...,T-1.
-#
-# loglikelihood:         estimate of the log-likelihood at T-1
-#
-##########################################################################
-##############################################################################
-
-def kalmanFilter(y, theta, initialState, initialStateCovariance):
-
-    T = len(y)
-
-    # Initalise variables
-    predictiveCovariance = initialStateCovariance
-    xHatPredicted = initialState * np.ones((T + 1, 1))
-    xHatFiltered = initialState * np.ones((T, 1))
-
-    # Set parameters
-    A = theta[0]
-    C = 1
-    Q = theta[1]**2
-    R = theta[2]**2
-
-    # Run main loop
-    for t in range(0, T):
-
-        # Calculate the Kalman Gain
-        S = C * predictiveCovariance * C + R
-        kalmanGain = predictiveCovariance * C / S
-
-        # Compute the state estimate
-        yHatPredicted = C * xHatPredicted[t]
-        xHatFiltered[t] = xHatPredicted[t] + kalmanGain * (y[t - 1] - yHatPredicted)
-        xHatPredicted[t + 1] = A * xHatFiltered[t]
-
-        # Update covariance
-        filteredCovariance = predictiveCovariance - kalmanGain * S * kalmanGain
-        predictiveCovariance = A * filteredCovariance * A + Q
-
-    return xHatFiltered
 
 
 ##############################################################################

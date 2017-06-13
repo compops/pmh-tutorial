@@ -1,10 +1,8 @@
 ##############################################################################
 #
-# Example of fully-adapted particle filtering
-# in a linear Gaussian state space model
+# Generates and plots data from a LGSS model.
 #
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +21,7 @@
 ##############################################################################
 
 # Import helper
+source("../helpers/dataGeneration.R")
 source("../helpers/stateEstimation.R")
 
 # Set the random seed to replicate results in tutorial

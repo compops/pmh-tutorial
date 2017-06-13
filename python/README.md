@@ -1,6 +1,6 @@
 # Python code for PMH tutorial
 
-This R code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: < http://arxiv.org/pdf/1511.01707 >.
+This Python code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: < http://arxiv.org/pdf/1511.01707 >.
 
 Note that the Python code in this folder covers the basic implementations in the paper. See the R code in r/ for all the implementations and to recreate the results in the tutorial.
 
@@ -24,11 +24,12 @@ These are the main script files that implement the various algorithms discussed 
 
 Supporting files (helpers/)
 --------------
-**stateEstimation.py**
-Implements data generation for the LGSS model (generateData), the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
+**dataGeneration.py** Generates data from a LGSS model.
 
-**parameterEstimation.py**
-Implements the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel). 
+**parameterEstimation.py** Implements the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel). 
+
+**stateEstimation.py** Implements the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
+
 
 Adapting the code for another model
 --------------

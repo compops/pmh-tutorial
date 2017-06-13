@@ -1,9 +1,9 @@
 ##############################################################################
 #
-# Example of particle Metropolis-Hastings
-# in a linear Gaussian state space model
+# Runs the particle Metropolis-Hastings algorithm from different number 
+# of observations generated from a LGSS model.
 #
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.se >
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 ##############################################################################
 
 # Import helper
+source("../helpers/dataGeneration.R")
 source("../helpers/stateEstimation.R")
 source("../helpers/parameterEstimation.R")
 
