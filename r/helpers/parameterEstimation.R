@@ -267,7 +267,7 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
   #=====================================================================
   # Return traces of the parameters
   #=====================================================================
-  list(theta = theta, xHatFiltered = xHatFiltered)
+  list(theta = theta, xHatFiltered = xHatFiltered, proposedThetaAccepted = proposedThetaAccepted)
 }
 
 

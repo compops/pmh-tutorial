@@ -101,6 +101,7 @@ makePlotsParticleMetropolisHastingsSVModel <- function(y, res, noBurnInIteration
   parameterScales <- c(-1, 1, 0.88, 1.0, 0, 0.4)
   parameterScales <- matrix(parameterScales, nrow = 3, ncol = 2, byrow = TRUE)
   parameterColors <- c("#7570B3", "#E7298A", "#66A61E")
+  iact <- c()
   
   for (k in 1:3) {
     
@@ -172,7 +173,11 @@ makePlotsParticleMetropolisHastingsSVModel <- function(y, res, noBurnInIteration
     )
     abline(h = 1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
     abline(h = -1.96 / sqrt(noIterations - noBurnInIterations), lty = "dotted")
+    
+    iact <- c(iact, 1 + 2 * sum(acf_res$acf))
   }
+  
+  iact
 }
 
 
