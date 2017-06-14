@@ -20,8 +20,9 @@
 #
 ##############################################################################
 
-# Import library
+# Import libraries
 library("Quandl")
+library("mvtnorm")
 
 # Import helpers
 source("helpers/stateEstimation.R")
@@ -87,7 +88,7 @@ if (savePlotToFile) {
             width = 8)
 }
 
-makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, noIterations, nPlot)
+iact <- makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, noIterations, nPlot)
 
 # Close the plotting device
 if (savePlotToFile) {
@@ -107,7 +108,7 @@ print(thhatSD)
 #[1] 0.37048000 0.02191359 0.05595271
 
 # Compute an estimate of the IACT using the first 100 ACF coefficients
-(iact <- 1 + 2 * c(sum(muACF$acf), sum(phiACF$acf), sum(sigmavACF$acf)))
+print(iact)
 # [1] 135.19084  85.98935  65.80120
 
 # Estimate the covariance of the posterior to tune the proposal
