@@ -36,8 +36,11 @@ set.seed(10)
 # Should the results be loaded from file (to quickly generate plots)
 loadSavedWorkspace <- FALSE
 
-# Save plot to file
-savePlotToFile <- FALSE
+# Should the proposals be tuned by a pilot run
+tuneProposals <- FALSE
+
+# Should we use the tuned proposals (requires "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
+useTunedProposals <- TRUE
 
 
 ##############################################################################
@@ -61,7 +64,7 @@ y <- as.numeric(100 * diff(log(d$"Index Value")))
 theta <- c(-0.12, 0.96, 0.17)
 
 # No. particles in the particle filter to try out
-noParticles <- c(10, 20, 50, 100, 200, 500, 1000)
+noParticles <- c(50, 100, 200, 300, 400, 500)
 
 # No. repetitions of log-likelihood estimate
 noSimulations <- 1000
@@ -72,9 +75,7 @@ logLikelihoodVariance <- rep(0, length(noParticles))
 computationalTimePerSample <- rep(0, length(noParticles))
 
 # Main loop
-if (loadSavedWorkspace) {
-  load("../savedWorkspaces/example4-sv-varyingN.RData")
-  } else {
+if (!loadSavedWorkspace) {
   for (k in 1:length(noParticles)) {
     # Save the current time
     ptm <- proc.time()
@@ -97,6 +98,7 @@ if (loadSavedWorkspace) {
   }
 }
 
+
 ##############################################################################
 # Parameter estimation using PMH
 ##############################################################################
@@ -110,22 +112,14 @@ noBurnInIterations <- 2500
 noIterations <- 7500
 
 # The standard deviation in the random walk proposal
-stepSize <- matrix(
-  c(
-    0.137255431,
-    -0.0016258103,
-    0.0015047492,
-    -0.0016258103,
-    0.0004802053,
-    -0.0009973058,
-    0.0015047492,
-    -0.0009973058,
-    0.0031307062
-  ),
-  ncol = 3,
-  nrow = 3
-)
-stepSize <- 0.8 * stepSize
+if (useTunedProposals) {
+  load(file = "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
+} else {
+  proposals <- array(0, dim = c(length(noParticles), 3, 3))
+  for (k in 1:length(noParticles)) {
+    proposals[k, , ] <- diag(c(0.10, 0.01, 0.05) ^ 2)
+  }
+}
 
 # Main loop
 if (loadSavedWorkspace) {
@@ -140,7 +134,7 @@ if (loadSavedWorkspace) {
     ptm <- proc.time()
     
     # Run the PMH algorithm
-    res <- particleMetropolisHastingsSVmodel(y, initialTheta, noParticles[k], noIterations, stepSize)
+    res <- particleMetropolisHastingsSVmodel(y, initialTheta, noParticles[k], noIterations, stepSize = proposals[k, ,])
     
     # Save the parameter trace
     resTheta[k, ,] <- res$theta[noBurnInIterations:noIterations,]
@@ -154,6 +148,7 @@ if (loadSavedWorkspace) {
   }
 }
 
+
 ##############################################################################
 # Post-processing (computing IACT and IACT * time)
 ##############################################################################
@@ -162,48 +157,31 @@ resThetaIACT <- matrix(0, nrow = length(noParticles), ncol = 3)
 resThetaIACTperSecond <- matrix(0, nrow = length(noParticles), ncol = 3)
 
 for (k in 1:length(noParticles)) {
-  acf_mu <- acf(resTheta[k, , 1], plot = FALSE, lag.max = 200)
-  acf_phi <- acf(resTheta[k, , 2], plot = FALSE, lag.max = 200)
-  acf_sigmav <- acf(resTheta[k, , 3], plot = FALSE, lag.max = 200)
+  acf_mu <- acf(resTheta[k, , 1], plot = FALSE, lag.max = 100)
+  acf_phi <- acf(resTheta[k, , 2], plot = FALSE, lag.max = 100)
+  acf_sigmav <- acf(resTheta[k, , 3], plot = FALSE, lag.max = 100)
   
   resThetaIACT[k, ] <- 1 + 2 * c(sum(acf_mu$acf), sum(acf_phi$acf), sum(acf_sigmav$acf))
   resThetaIACTperSecond[k, ] <- resThetaIACT[k, ] / computationalTimePerIteration[k]
 }
 
-print(rbind(noParticles, apply(resThetaIACT, 1, max), apply(resThetaIACTperSecond, 1, max)))
+table <- rbind(noParticles, logLikelihoodVariance, 100 * acceptProbability, apply(resThetaIACT, 1, max), apply(resThetaIACT, 1, max) * computationalTimePerIteration, computationalTimePerIteration)
+table <- round(table, 2)
+print(table)
 
 
+##############################################################################
+# Tune the PMH proposal using a pilot run
+##############################################################################
 
-# # Export plot to file
-# if (savePlotToFile) {
-#   cairo_pdf("figures/example4-sv-varyingN.pdf",
-#             height = 10,
-#             width = 8)
-# }
-# 
-# layout(matrix(1:14, 7, 2, byrow = FALSE))
-# par(mar = c(4, 5, 0, 0))
-# 
-# for (k in 1:length(noParticles)) {
-#   xlab = ""
-#   if (k == length(noParticles)) { xlab = "log-likelihood"}
-#   hist(
-#     logLikelihoodEstimates[k, ],
-#     breaks = floor(sqrt(noSimulations)),
-#     col = rgb(t(col2rgb("#1B9E77")) / 256, alpha = 0.25),
-#     border = NA,
-#     xlab = xlab,
-#     ylab = "",
-#     xlim = c(-730, -680),
-#     main = "",
-#     freq = FALSE
-#   )
-# }
-# 
-# # Close the plotting device
-# if (savePlotToFile) {
-#   dev.off()
-# }
+if (tuneProposals) {
+  proposals <- array(0, dim = c(length(noParticles), 3, 3))
+  
+  for (k in 1:length(noParticles)) {
+    proposals[k, , ] <- cov(resTheta[k, , ]) * 2.562^2 / 3
+  }
+  save(proposals, file = "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
+}
 
 
 ##############################################################################
