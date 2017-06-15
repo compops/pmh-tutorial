@@ -79,7 +79,7 @@ stepSize <- matrix(
   ncol = 3,
   nrow = 3
 )
-stepSize <- 0.8 * stepSize
+stepSize <- 2.562^2 / 3 * stepSize
 
 # Run the PMH algorithm
 if (loadSavedWorkspace) {
