@@ -251,13 +251,14 @@ particleFilterSVmodel <- function(y, theta, noParticles) {
     # Propagate
     #=========================================================
     part1 <- mu + phi * (particles[newAncestors, t - 1] - mu)
-    part2 <- rnorm(noParticles, 0, sigmav)
-    particles[, t] <- part1 + part2
+    particles[, t] <- part1 + rnorm(noParticles, 0, sigmav)
     
     #=========================================================
     # Compute weights
     #=========================================================
-    weights[, t] <- dnorm(y[t - 1], 0, exp(particles[, t] / 2), log = TRUE)
+    yhatMean <- 0
+    yhatVariance <- exp(particles[, t] / 2)
+    weights[, t] <- dnorm(y[t - 1], yhatMean, yhatVariance, log = TRUE)
     
     # Rescale log-weights and recover weights
     maxWeight <- max(weights[, t])
