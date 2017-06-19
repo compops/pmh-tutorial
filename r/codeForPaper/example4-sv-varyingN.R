@@ -157,15 +157,15 @@ resThetaIACT <- matrix(0, nrow = length(noParticles), ncol = 3)
 resThetaIACTperSecond <- matrix(0, nrow = length(noParticles), ncol = 3)
 
 for (k in 1:length(noParticles)) {
-  acf_mu <- acf(resTheta[k, , 1], plot = FALSE, lag.max = 100)
-  acf_phi <- acf(resTheta[k, , 2], plot = FALSE, lag.max = 100)
-  acf_sigmav <- acf(resTheta[k, , 3], plot = FALSE, lag.max = 100)
+  acf_mu <- acf(resTheta[k, , 1], plot = FALSE, lag.max = 250)
+  acf_phi <- acf(resTheta[k, , 2], plot = FALSE, lag.max = 250)
+  acf_sigmav <- acf(resTheta[k, , 3], plot = FALSE, lag.max = 250)
   
   resThetaIACT[k, ] <- 1 + 2 * c(sum(acf_mu$acf), sum(acf_phi$acf), sum(acf_sigmav$acf))
   resThetaIACTperSecond[k, ] <- resThetaIACT[k, ] / computationalTimePerIteration[k]
 }
 
-table <- rbind(noParticles, logLikelihoodVariance, 100 * acceptProbability, apply(resThetaIACT, 1, max), apply(resThetaIACT, 1, max) * computationalTimePerIteration, computationalTimePerIteration)
+table <- rbind(noParticles, sqrt(logLikelihoodVariance), 100 * acceptProbability, apply(resThetaIACT, 1, max), apply(resThetaIACT, 1, max) * computationalTimePerIteration, computationalTimePerIteration)
 table <- round(table, 2)
 print(table)
 

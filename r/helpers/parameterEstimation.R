@@ -197,13 +197,17 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
     }
     
     # Compute difference in the log-priors
-    priorMu <- dnorm(thetaProposed[k, 1], 0, 1, log = TRUE) - dnorm(theta[k - 1, 1], 0, 1, log = TRUE)
-    priorPhi <- dnorm(thetaProposed[k, 2], 0.95, 0.05, log = TRUE) - dnorm(theta[k - 1, 2], 0.95, 0.05, log = TRUE)
-    priorSigmaV <- dgamma(thetaProposed[k, 3], 2, 10, log = TRUE) - dgamma(theta[k - 1, 3], 2, 10, log = TRUE)
+    priorMu <- dnorm(thetaProposed[k, 1], 0, 1, log = TRUE) 
+    priorMu <- priorMu - dnorm(theta[k - 1, 1], 0, 1, log = TRUE)
+    priorPhi <- dnorm(thetaProposed[k, 2], 0.95, 0.05, log = TRUE) 
+    priorPhi <- priorPhi - dnorm(theta[k - 1, 2], 0.95, 0.05, log = TRUE)
+    priorSigmaV <- dgamma(thetaProposed[k, 3], 2, 10, log = TRUE)
+    priorSigmaV <- priorSigmaV - dgamma(theta[k - 1, 3], 2, 10, log = TRUE)
+    prior <- priorMu + priorPhi + priorSigmaV
     
     # Compute the acceptance probability
     likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
-    acceptProbability <- exp(priorMu + priorPhi + priorSigmaV + likelihoodDifference)
+    acceptProbability <- exp(prior + likelihoodDifference)
     
     # Always reject if parameter results in an unstable system
     acceptProbability <- acceptProbability * (abs(thetaProposed[k, 2]) < 1.0)
