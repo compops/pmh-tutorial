@@ -119,7 +119,7 @@ plot(
   col = "#7570B3",
   type = "l",
   xlab = "time",
-  ylab = "difference in state estimate",
+  ylab = "error in state estimate",
   ylim = c(-0.1, 0.1),
   bty = "n"
 )
