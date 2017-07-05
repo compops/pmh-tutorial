@@ -61,3 +61,4 @@ generateData <- function(theta, T, initialState) {
   }
   
   list(x = x, y = y)
+}

@@ -211,6 +211,7 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
     
     # Always reject if parameter results in an unstable system
     acceptProbability <- acceptProbability * (abs(thetaProposed[k, 2]) < 1.0)
+    acceptProbability <- acceptProbability * (thetaProposed[k, 3] > 0.0)
     
     # Generate uniform random variable in U[0,1]
     uniformRandomVariable <- runif(1)
