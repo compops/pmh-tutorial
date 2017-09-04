@@ -133,7 +133,7 @@ def particleFilter(y, theta, noParticles, initialState):
     #=====================================================================
     # Run main loop
     #=====================================================================
-    for t in range(1, T):
+    for t in range(1, T - 1):
 
         #=============================================================
         # Resample particles
@@ -149,14 +149,19 @@ def particleFilter(y, theta, noParticles, initialState):
         #=============================================================
         # Propagate particles
         #=============================================================
-        particles[:, t] = theta[0] * particles[newAncestors, t - 1] + theta[1] * randn(1, noParticles)
+        part1 = (theta[1]**(-2) + theta[2]**(-2))**(-1)
+        part2 = theta[2]**(-2) * y[t]
+        part2 = part2 + theta[1]**(-2) * theta[0] * particles[newAncestors, t - 1]
+        particles[:, t] = part1 * part2 + np.sqrt(part1) * randn(1, noParticles)
 
         #=================================================================
         # Weight particles
         #=================================================================
 
         # Compute log-weights
-        weights[:, t] = norm.logpdf(y[t - 1], particles[:, t], theta[2])
+        yhatMean = theta[0] * particles[:, t]
+        yhatVariance = np.sqrt(theta[1]**2 + theta[2]**2)
+        weights[:, t] = norm.logpdf(y[t + 1], yhatMean, yhatVariance)
 
         # Rescale log-weights and recover weights
         maxWeight = np.max(weights[:, t])

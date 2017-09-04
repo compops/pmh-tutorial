@@ -88,12 +88,11 @@ xHatFilteredParticleFilter, _ = particleFilter(y, theta, 100, initialState)
 # Using the Kalman filter
 xHatFilteredKalmanFilter = kalmanFilter(y, theta, initialState, 0.01)
 
-
 plt.subplot(3, 1, 3)
-plt.plot(xHatFilteredKalmanFilter - xHatFilteredParticleFilter, color='#7570B3', linewidth=1.5)
+plt.plot(xHatFilteredKalmanFilter[1:T] - xHatFilteredParticleFilter[0:T-1], color='#7570B3', linewidth=1.5)
 plt.xlabel("time")
 plt.ylabel("difference in estimate")
-
+plt.show()
 
 ##############################################################################
 # End of file
