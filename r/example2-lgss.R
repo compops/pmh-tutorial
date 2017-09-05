@@ -1,24 +1,4 @@
-##############################################################################
-#
-# Example of particle Metropolis-Hastings in a LGSS model.
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-##############################################################################
+# Parameter estimation using particle Metropolis-Hastings in a LGSS model.
 
 # Import helpers
 source("helpers/dataGeneration.R")
@@ -34,48 +14,20 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
-
-##############################################################################
 # Define the model
-##############################################################################
-
-# Here, we use the following model
-#
-# x[t + 1] = phi * x[t] + sigmav * v[t]
-# y[t] = x[t] + sigmae * e[t]
-#
-# where v[t] ~ N(0, 1) and e[t] ~ N(0, 1)
-
-# Set the parameters of the model
-phi <- 0.75
+# x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
+# y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)phi <- 0.75
 sigmav <- 1.00
 sigmae <- 0.10
-
-# Set the number of time steps to simulate
 T <- 250
-
-# Set the initial state
 initialState <- 0
 
-
-##############################################################################
 # Generate data
-##############################################################################
-
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 
-
-##############################################################################
-# Parameter estimation using PMH
-##############################################################################
-
-# The inital guess of the parameter
+# Settings for PMH
 initialPhi <- 0.50
-
-# No. particles in the particle filter
 noParticles <- 100
-
-# The length of the burn-in and the no. iterations of PMH ( noBurnInIterations < noIterations )
 noBurnInIterations <- 1000
 noIterations <- 5000
 
@@ -118,11 +70,7 @@ if (loadSavedWorkspace) {
     )
 }
 
-##############################################################################
 # Plot the results
-##############################################################################
-
-# Extract the states after burn-in
 resTh1 <- res1[noBurnInIterations:noIterations,]
 resTh2 <- res2[noBurnInIterations:noIterations,]
 resTh3 <- res3[noBurnInIterations:noIterations,]
@@ -333,11 +281,6 @@ if (savePlotToFile) {
   dev.off()
 }
 
-
-##############################################################################
-# Compute and save the results
-##############################################################################
-
 # Estimate the parameter posterior mean
 mean(res1[grid])
 mean(res2[grid])
@@ -347,8 +290,3 @@ mean(res3[grid])
 if (!loadSavedWorkspace) {
   save.image("savedWorkspaces/example2-lgss.RData")
 }
-
-
-##############################################################################
-# End of file
-##############################################################################

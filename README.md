@@ -1,10 +1,10 @@
 # pmh-tutorial
 
-This code was downloaded from < https://github.com/compops/pmh-tutorial > and contains the code used to produce the results in the tutorial:
+This code was downloaded from https://github.com/compops/pmh-tutorial and contains the code used to produce the results in the tutorial:
 
 J. Dahlin and T. B. Schön, **Getting started with particle Metropolis-Hastings for inference in nonlinear models**. Pre-print, arXiv:1511:01707, 2017. 
 
-The papers are available as a preprint from < http://arxiv.org/pdf/1511.01707 >.
+The papers are available as a preprint from http://arxiv.org/pdf/1511.01707
 
 Included material
 --------------
@@ -18,4 +18,28 @@ Included material
 
 **matlab-skeleton** Skeleton code files for MATLAB to help step-by-step implementation during courses and seminars. 
 
+Copyright information
+--------------
+See *LICENSE* for more information.
 
+``` R
+##############################################################################
+#
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+##############################################################################
+```

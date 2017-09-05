@@ -1,25 +1,4 @@
-##############################################################################
-#
-# Example of state estimation in a LGSS model 
-# using particle filters and Kalman filters
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-##############################################################################
+# State estimation in a LGSS model using particle and Kalman filters
 
 # Import helper
 source("helpers/dataGeneration.R")
@@ -34,34 +13,16 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
-
-##############################################################################
 # Define the model
-##############################################################################
-
-# Here, we use the following model
-#
-# x[t + 1] = phi * x[t] + sigmav * v[t]
-# y[t] = x[t] + sigmae * e[t]
-#
-# where v[t] ~ N(0, 1) and e[t] ~ N(0, 1)
-
-# Set the parameters of the model
+# x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
+# y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
 phi <- 0.75
 sigmav <- 1.00
 sigmae <- 0.10
-
-# Set the number of time steps to simulate
 T <- 250
-
-# Set the initial state
 initialState <- 0
 
-
-##############################################################################
 # Generate data
-##############################################################################
-
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 x <- data$x
 y <- data$y
@@ -95,10 +56,7 @@ polygon(c(grid, rev(grid)),
         col = rgb(t(col2rgb("#1B9E77")) / 256, alpha = 0.25))
 
 
-###################################################################################
 # State estimation using the particle filter and Kalman filter
-###################################################################################
-
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example1-lgss.RData")
 } else {
@@ -187,11 +145,6 @@ if (savePlotToFile) {
   dev.off()
 }
 
-
-##############################################################################
-# Compute and save the results
-##############################################################################
-
 # Print a table (no. particles, log-bias, log-mse)
 print(t(rbind(gridN, t(logBiasMSE))))
 
@@ -208,8 +161,3 @@ print(t(rbind(gridN, t(logBiasMSE))))
 if (!loadSavedWorkspace) {
   save.image("savedWorkspaces/example1-lgss.RData")
 }
-
-
-###################################################################################
-# End of file
-###################################################################################

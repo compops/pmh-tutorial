@@ -1,16 +1,16 @@
 # Python code for PMH tutorial
 
-This Python code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: < http://arxiv.org/pdf/1511.01707 >.
+This Python code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at http://arxiv.org/pdf/1511.01707
 
-Note that the Python code in this folder covers the basic implementations in the paper. See the R code in r/ for all the implementations and to recreate the results in the tutorial.
+Note that the Python code in this folder covers the basic implementations in the paper. The notation of the variables has been changed sligthly compared with the tutorial paper to improve readability of the code. However, it should be easy to translate between the two. See the R code in r/ for all the implementations and to recreate the results in the tutorial.
 
 Requirements
 --------------
-The code is written and tested for Python 2.7.6/3.6.0 togehter with NumPy 1.9.2/1.11.3, SciPy 0.15.1/0.18.1, Matplotlib 1.4.3/2.0.0 and Quandl 2.8.9/3.1.0. These packages are easily avaiable via Anaconda (https://docs.continuum.io/anaconda/install) by installing the package for your preference of Python version and then executing
+The code is written and tested for Python 2.7.6/3.6.0 together with NumPy 1.9.2/1.11.3, SciPy 0.15.1/0.18.1, Matplotlib 1.4.3/2.0.0 and Quandl 2.8.9/3.1.0. These packages are easily available via Anaconda (https://docs.continuum.io/anaconda/install) by installing the package for your preference of Python version and then executing
 ``` bash
 conda install numpy scipy matplotlib quandl
 ```
-For more information about the Quandl library, see < https://www.quandl.com/tools/python >.
+For more information about the Quandl library, see https://www.quandl.com/tools/python
 
 Main script files
 --------------
@@ -34,3 +34,27 @@ Supporting files (helpers/)
 Adapting the code for another model
 --------------
 See the discussion in *README.MD* in the directory *r/*.
+
+Copyright information
+--------------
+``` R
+##############################################################################
+#
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+##############################################################################
+```

@@ -1,6 +1,6 @@
 # R code for PMH tutorial
 
-This R code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: < http://arxiv.org/pdf/1511.01707 >.
+This R code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: http://arxiv.org/pdf/1511.01707
 
 Requirements
 --------------
@@ -85,3 +85,27 @@ Finally, note that the particle filter implemetation can only be used for state-
 The implemenation of the PMH algorithm is general and does not require any larger changes if the model is changed. The dimensionality of the variables *xHatFiltered*, *xHatFilteredProposed*, *theta* and *thetaProposed* needs to be altered to match the dimensionality of the state and the number of parameters in the new state-space model. Moreover, the initial value of theta and the proposal distribution need to be calibrated for your new model. The simplest way to do this is by so-called pilot runs. Set the initial value to something reasonable and stepSize to a diagonal matrix with quite small elements, so that you get at least some accepted proposed values. After the pilot run, adapt the proposal as is discussed in 6.3.2 and initialise the PMH algorithm in the estimated posterior mean. Repeat this one or two more times or until you are satisfied. 
 
 It is known that this simple version of PMH performs bad when the number of parameters is larger than about 5. To circumvent this problem, see the suggestions in Sections 4.3 and 6. It is also discussed there how to choose the number of particles *noParticles* and the number of iterations *noIterations* to use in the PMH algorithm. *noBurnInIterations* can be selected by looking at the trace plot for when the Markov chain has reached its steady-state/stationarity. I usually use *noIterations* as 10,000 or 30,000 (with *noBurnInIterations* as 3,000 or 10,0000) to get good posterior estimates but these runs take time. Also, using *noParticles* as somewhere between *T* and 2*T* is a good place to start.
+
+Copyright information
+--------------
+``` R
+##############################################################################
+#
+# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+##############################################################################
+```
