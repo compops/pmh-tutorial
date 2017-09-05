@@ -1,30 +1,4 @@
-##############################################################################
-#
-# Particle Metropolis-Hastings for LGSS and SV models
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-##############################################################################
-
-
-##############################################################################
 # Particle Metropolis-Hastings (LGSS model)
-##############################################################################
-
 particleMetropolisHastings <-
   function(y,
            initialPhi,
@@ -34,33 +8,7 @@ particleMetropolisHastings <-
            initialState,
            noIterations,
            stepSize) {
-    #
-    # Particle Metropolis-Hastings (PMH) for the LGSS model
-    #
-    # Inputs:
-    # y:                   observations from the system for t=1,...,T.
-    #
-    # initPar:             initial value for phi (persistence of the state)
-    #
-    # sigmav, sigmae:      the standard deviations of the state innovations
-    #                      and observation noise.
-    #
-    # noParticles:         number of particles (N)
-    #
-    # initialState:        initial state
-    #
-    # noIterations:        the number of iterations in PMH.
-    #
-    # stepSize:            the standard deviation of the RW proposal.
-    #
-    # Outputs:
-    # phi:                 K samples from the parameter posterior
-    #
-    #
     
-    #===========================================================
-    # Initialise variables
-    #===========================================================
     phi <- matrix(0, nrow = noIterations, ncol = 1)
     phiProposed <- matrix(0, nrow = noIterations, ncol = 1)
     logLikelihood <- matrix(0, nrow = noIterations, ncol = 1)
@@ -73,9 +21,7 @@ particleMetropolisHastings <-
     outputPF <- particleFilter(y, theta, noParticles, initialState)
     logLikelihood[1]<- outputPF$logLikelihood
     
-    #=====================================================================
-    # Run main loop
-    #=====================================================================
+    # Main loop
     for (k in 2:noIterations) {
       # Propose a new parameter
       phiProposed[k] <- phi[k - 1] + stepSize * rnorm(1)
@@ -92,14 +38,12 @@ particleMetropolisHastings <-
       priorPart <- priorPart - dnorm(phi[k - 1], log = TRUE)
       likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
       acceptProbability <- exp(priorPart + likelihoodDifference)
-      
-      # Always reject if parameter results in an unstable system
+    
       acceptProbability <- acceptProbability * (abs(phiProposed[k]) < 1.0)
-       
-      # Generate uniform random variable in U[0,1]
-      uniformRandomVariable <- runif(1)
-      
+
       # Accept / reject step
+      uniformRandomVariable <- runif(1)
+
       if (uniformRandomVariable < acceptProbability) {
         # Accept the parameter
         phi[k] <- phiProposed[k]
@@ -132,42 +76,15 @@ particleMetropolisHastings <-
       }
     }
     
-    #=====================================================================
-    # Return traces of the parameter phi
-    #=====================================================================
     phi
   }
 
 
-##############################################################################
 # Particle Metropolis-Hastings (SV model)
-##############################################################################
-
 particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIterations, stepSize) {
-  #
-  # Particle Metropolis-Hastings (PMH) for the SV model
-  #
-  # Inputs:
-  # y:                   observations from the system for t=1,...,T.
-  #
-  # initialTheta:        initial values of the parameters
-  #                      ( mu, phi, sigmav )
-  #
-  # noParticles:         number of particles (N)
-  #
-  # noIterations:        the number of iterations in PMH
-  #
-  # stepSize:            the standard deviation of the RW proposal.
-  #
-  # Outputs:
-  # theta:               K samples from the parameter posterior.
-  #
-  #
   
   T <- length(y) - 1
-  #===========================================================
-  # Initialise variables
-  #===========================================================
+
   xHatFiltered <- matrix(0, nrow = noIterations, ncol = T + 1)
   xHatFilteredProposed <- matrix(0, nrow = noIterations, ncol = T + 1)
   theta <- matrix(0, nrow = noIterations, ncol = 3)
@@ -182,9 +99,7 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
   logLikelihood[1] <- res$logLikelihood
   xHatFiltered[1, ] <- res$xHatFiltered
   
-  #=====================================================================
-  # Run main loop
-  #=====================================================================
+  # Main loop
   for (k in 2:noIterations) {
     # Propose a new parameter
     thetaProposed[k, ] <- rmvnorm(1, mean = theta[k - 1, ], sigma = stepSize)
@@ -209,14 +124,12 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
     likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
     acceptProbability <- exp(prior + likelihoodDifference)
     
-    # Always reject if parameter results in an unstable system
     acceptProbability <- acceptProbability * (abs(thetaProposed[k, 2]) < 1.0)
     acceptProbability <- acceptProbability * (thetaProposed[k, 3] > 0.0)
     
-    # Generate uniform random variable in U[0,1]
-    uniformRandomVariable <- runif(1)
-    
     # Accept / reject step
+    uniformRandomVariable <- runif(1)
+
     if (uniformRandomVariable < acceptProbability) {
       # Accept the parameter
       theta[k, ] <- thetaProposed[k, ]
@@ -269,44 +182,16 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
     }
   }
   
-  #=====================================================================
-  # Return traces of the parameters
-  #=====================================================================
   list(theta = theta, xHatFiltered = xHatFiltered, proposedThetaAccepted = proposedThetaAccepted)
 }
 
 
-##############################################################################
 # Particle Metropolis-Hastings (reparameterised SV model)
-##############################################################################
-
 particleMetropolisHastingsSVmodelReparameterised <-
     function(y, initialTheta, noParticles, noIterations, stepSize) {
-    #
-    # Particle Metropolis-Hastings (PMH) for the SV model
-    #
-    # Inputs:
-    # y:                   observations from the system for t=1,...,T.
-    #
-    # initialTheta:        initial values of the parameters
-    #                      ( mu, phi, sigmav )
-    #
-    # noParticles:         number of particles (N)
-    #
-    # noIterations:        the number of iterations in PMH
-    #
-    # stepSize:            the standard deviation of the RW proposal.
-    #
-    # Outputs:
-    # theta:               K samples from the parameter posterior.
-    #
-    #
-      
+          
     T <- length(y) - 1
     
-    #===========================================================
-    # Initialise variables
-    #===========================================================
     xHatFiltered <- matrix(0, nrow = noIterations, ncol = T + 1)
     xHatFilteredProposed <- matrix(0, nrow = noIterations, ncol = T + 1)
     theta <- matrix(0, nrow = noIterations, ncol = 3)
@@ -324,9 +209,7 @@ particleMetropolisHastingsSVmodelReparameterised <-
     logLikelihood[1] <- res$logLikelihood
     xHatFiltered[1, ] <- res$xHatFiltered
     
-    #=====================================================================
-    # Run main loop
-    #=====================================================================
+    # Main loop
     for (k in 2:noIterations) {
       # Propose a new parameter
       thetaTransformedProposed[k, ] <- rmvnorm(1, mean = thetaTransformed[k - 1, ], sigma = stepSize)
@@ -348,11 +231,10 @@ particleMetropolisHastingsSVmodelReparameterised <-
       logJacob <- logJacob1 + logJacob2
       
       acceptProbability <- exp(logPrior + logLikelihoodProposed[k] - logLikelihood[k - 1] + logJacob)
-      
-      # Generate uniform random variable in U[0,1]
-      uniformRandomVariable <- runif(1)
-      
+
       # Accept / reject step
+      uniformRandomVariable <- runif(1)
+
       if (uniformRandomVariable < acceptProbability) {
         # Accept the parameter
         theta[k, ] <- thetaProposed[k, ]
@@ -407,15 +289,7 @@ particleMetropolisHastingsSVmodelReparameterised <-
       }
     }
     
-    #=====================================================================
-    # Return traces of the parameters
-    #=====================================================================
     list(theta = theta,
          xHatFiltered = xHatFiltered,
          thetaTransformed = thetaTransformed)
     }
-
-
-##############################################################################
-# End of file
-##############################################################################

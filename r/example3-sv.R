@@ -1,24 +1,4 @@
-##############################################################################
-#
-# Example of particle Metropolis-Hastings in a stochastic volatility model
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-##############################################################################
+# Parameter estimation using particle Metropolis-Hastings in a stochastic volatility model
 
 # Import libraries
 library("Quandl")
@@ -38,10 +18,7 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
-
-##############################################################################
 # Load data
-##############################################################################
 d <-
   Quandl(
     "NASDAQOMX/OMXS30",
@@ -52,21 +29,11 @@ d <-
 y <- as.numeric(100 * diff(log(d$"Index Value")))
 
 
-##############################################################################
-# Parameter estimation using PMH
-##############################################################################
-
-# The inital guess of the parameter
+# Settings for PMH
 initialTheta <- c(0, 0.9, 0.2)
-
-# No. particles in the particle filter ( choose noParticles ~ T )
 noParticles <- 500
-
-# The length of the burn-in and the no. iterations of PMH ( noBurnInIterations < noIterations )
 noBurnInIterations <- 2500
 noIterations <- 7500
-
-# The standard deviation in the random walk proposal
 stepSize <- diag(c(0.10, 0.01, 0.05) ^ 2)
 
 # Run the PMH algorithm
@@ -77,11 +44,7 @@ if (loadSavedWorkspace) {
     particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
 }
 
-##############################################################################
 # Plot the results
-##############################################################################
-
-# Export plot to file
 if (savePlotToFile) {
   cairo_pdf("figures/example3-sv.pdf",
             height = 10,
@@ -94,11 +57,6 @@ iact <- makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, n
 if (savePlotToFile) {
   dev.off()
 }
-
-
-##############################################################################
-# Compute and save the results
-##############################################################################
 
 # Print the estimate of the posterior mean and standard deviation
 print(thhat)
@@ -122,8 +80,3 @@ estCov <- var(resTh)
 if (!loadSavedWorkspace) {
   save.image("savedWorkspaces/example3-sv.RData")
 }
-
-
-##############################################################################
-# End of file
-##############################################################################
