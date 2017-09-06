@@ -1,11 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Example of particle Metropolis-Hastings in a LGSS model.
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Set random seed
 rng(0)
 
-% Define the model
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the model and generate data
 % x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
 % y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 phi = 0.75;
 sigmav = 1.00;
 sigmae = 0.10;
@@ -13,20 +18,22 @@ parameters = [phi sigmav sigmae];
 noObservations = 250;
 initialState = 0;
 
-% Generate data
 [states, observations] = generateData(parameters, noObservations, initialState);
 
-% Setings for PMH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PMH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 initialPhi = 0.50;
 noParticles = 100;          % Use noParticles ~ noObservations
 noBurnInIterations = 1000;
 noIterations = 5000;
 stepSize = 0.10;
 
-% Run the PMH algorithm
 phiTrace = particleMetropolisHastings(observations, initialPhi, [sigmav sigmae], noParticles, initialState, noIterations, stepSize);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 noBins = floor(sqrt(noIterations - noBurnInIterations));
 grid = noBurnInIterations:noIterations;
 phiTrace = phiTrace(noBurnInIterations:noIterations);

@@ -1,14 +1,18 @@
+##############################################################################
 # Particle Metropolis-Hastings for LGSS and SV models
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
 from __future__ import print_function, division
 import numpy as np
 from numpy.random import randn, uniform, multivariate_normal
 from scipy.stats import gamma, norm
 
+##############################################################################
 # Particle Metropolis-Hastings (PMH) for the LGSS model
-def particleMetropolisHastings(
-    observations, initialPhi, parameters, noParticles, 
-    initialState, particleFilter, noIterations, stepSize):
+##############################################################################
+def particleMetropolisHastings(observations, initialPhi, parameters, noParticles, 
+        initialState, particleFilter, noIterations, stepSize):
 
     phi = np.zeros(noIterations)
     phiProposed = np.zeros(noIterations)
@@ -20,9 +24,7 @@ def particleMetropolisHastings(
     phi[0] = initialPhi
     _, logLikelihood[0] = particleFilter(observations, (phi[0], parameters[1], parameters[2]), noParticles, initialState)
 
-    # Main loop
     for k in range(1, noIterations):
-
         # Propose a new parameter
         phiProposed[k] = phi[k - 1] + stepSize * randn()
 
@@ -49,27 +51,22 @@ def particleMetropolisHastings(
 
         # Write out progress
         if np.remainder(k, 100) == 0:
-            print(
-                "##################################################################### ")
-            print(" Iteration: " + str(k) +
-                  " of : " + str(noIterations) + " completed.")
+            print("#####################################################################")
+            print(" Iteration: " + str(k) + " of : " + str(noIterations) + " completed.")
             print("")
-            print(" Current state of the Markov chain:       " + "%.4f" %
-                  phi[k] + ".")
-            print(" Proposed next state of the Markov chain: " + "%.4f" %
-                  phiProposed[k] + ".")
-            print(" Current posterior mean:                  " + "%.4f" %
-                  np.mean(phi[0:k]) + ".")
-            print(" Current acceptance rate:                 " + "%.4f" %
-                  np.mean(proposedPhiAccepted[0:k]) + ".")
-            print(
-                "##################################################################### ")
+            print(" Current state of the Markov chain:       " + "%.4f" % phi[k] + ".")
+            print(" Proposed next state of the Markov chain: " + "%.4f" % phiProposed[k] + ".")
+            print(" Current posterior mean:                  " + "%.4f" % np.mean(phi[0:k]) + ".")
+            print(" Current acceptance rate:                 " + "%.4f" % np.mean(proposedPhiAccepted[0:k]) + ".")
+            print("#####################################################################")
     
     return phi
 
+##############################################################################
 # Particle Metropolis-Hastings (PMH) for the SV model
-def particleMetropolisHastingsSVModel(
-    observations, initialTheta, noParticles, particleFilter, noIterations, stepSize):
+##############################################################################
+def particleMetropolisHastingsSVModel(observations, initialTheta, 
+        noParticles, particleFilter, noIterations, stepSize):
 
     noObservations = len(observations)
 
@@ -85,12 +82,10 @@ def particleMetropolisHastingsSVModel(
     theta[0, :] = initialTheta
     (xHatFiltered[0, :], logLikelihood[0]) = particleFilter(observations, theta[0, :], noParticles)
 
-    # Main loop
     for k in range(1, noIterations):
 
         # Propose a new parameter
-        thetaProposed[k, :] = theta[k - 1, :] + \
-            multivariate_normal(mean=np.zeros(3), cov=stepSize);
+        thetaProposed[k, :] = theta[k - 1, :] + multivariate_normal(mean = np.zeros(3), cov = stepSize)
 
         # Estimate the log-likelihood if the proposed theta results in a stable model
         if ((np.abs(thetaProposed[k, 1]) < 1.0) & (thetaProposed[k, 2] > 0.0)):
@@ -99,10 +94,10 @@ def particleMetropolisHastingsSVModel(
         # Compute the ratio between the prior distributions (in log-form)
         prior = norm.logpdf(thetaProposed[k, 0], 0, 1) 
         prior -= norm.logpdf(theta[k - 1, 0], 0, 1)
-        
+
         prior += norm.logpdf(thetaProposed[k, 1], 0.95, 0.05) 
         prior -= norm.logpdf(theta[k - 1, 1], 0.95, 0.05)
-        
+
         prior += gamma.logpdf(thetaProposed[k, 2], 2, 1.0 / 10.0) 
         prior -= gamma.logpdf(theta[k - 1, 2], 2, 1.0 / 10.0)
 
@@ -128,20 +123,13 @@ def particleMetropolisHastingsSVModel(
 
         # Write out progress
         if np.remainder(k, 100) == 0:
-            print(
-                "##################################################################### ")
-            print(" Iteration: " + str(k) +
-                  " of : " + str(noIterations) + " completed.")
+            print("#####################################################################")
+            print(" Iteration: " + str(k) + " of : " + str(noIterations) + " completed.")
             print("")
-            print(" Current state of the Markov chain:       " + "%.4f" %
-                  theta[k, 0] + " " + "%.4f" % theta[k, 1] + " " + "%.4f" % theta[k, 2] + ".")
-            print(" Proposed next state of the Markov chain: " + "%.4f" %
-                  thetaProposed[k, 0] + " " + "%.4f" % thetaProposed[k, 1] + " " + "%.4f" % thetaProposed[k, 2] + ".")
-            print(" Current posterior mean:                  " + "%.4f" % np.mean(
-                theta[0:k, 0]) + " " + "%.4f" % np.mean(theta[0:k, 1]) + " " + "%.4f" % np.mean(theta[0:k, 2]) + ".")
-            print(" Current acceptance rate:                 " + "%.4f" %
-                  np.mean(proposedThetaAccepted[0:k]) + ".")
-            print(
-                "##################################################################### ")
+            print(" Current state of the Markov chain:       " + "%.4f" % theta[k, 0] + " " + "%.4f" % theta[k, 1] + " " + "%.4f" % theta[k, 2] + ".")
+            print(" Proposed next state of the Markov chain: " + "%.4f" % thetaProposed[k, 0] + " " + "%.4f" % thetaProposed[k, 1] + " " + "%.4f" % thetaProposed[k, 2] + ".")
+            print(" Current posterior mean:                  " + "%.4f" % np.mean( theta[0:k, 0]) + " " + "%.4f" % np.mean(theta[0:k, 1]) + " " + "%.4f" % np.mean(theta[0:k, 2]) + ".")
+            print(" Current acceptance rate:                 " + "%.4f" % np.mean(proposedThetaAccepted[0:k]) + ".")
+            print("#####################################################################")
     
     return (xHatFiltered, theta)

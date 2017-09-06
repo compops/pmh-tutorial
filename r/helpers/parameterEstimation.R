@@ -1,13 +1,11 @@
+##############################################################################
+# Particle Metropolis-Hastings implemenations for LGSS and SV models
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
+
 # Particle Metropolis-Hastings (LGSS model)
-particleMetropolisHastings <-
-  function(y,
-           initialPhi,
-           sigmav,
-           sigmae,
-           noParticles,
-           initialState,
-           noIterations,
-           stepSize) {
+particleMetropolisHastings <- function(y, initialPhi, sigmav, sigmae, 
+  noParticles, initialState, noIterations, stepSize) {
     
     phi <- matrix(0, nrow = noIterations, ncol = 1)
     phiProposed <- matrix(0, nrow = noIterations, ncol = 1)
@@ -21,7 +19,6 @@ particleMetropolisHastings <-
     outputPF <- particleFilter(y, theta, noParticles, initialState)
     logLikelihood[1]<- outputPF$logLikelihood
     
-    # Main loop
     for (k in 2:noIterations) {
       # Propose a new parameter
       phiProposed[k] <- phi[k - 1] + stepSize * rnorm(1)
@@ -38,12 +35,10 @@ particleMetropolisHastings <-
       priorPart <- priorPart - dnorm(phi[k - 1], log = TRUE)
       likelihoodDifference <- logLikelihoodProposed[k] - logLikelihood[k - 1]
       acceptProbability <- exp(priorPart + likelihoodDifference)
-    
       acceptProbability <- acceptProbability * (abs(phiProposed[k]) < 1.0)
 
       # Accept / reject step
       uniformRandomVariable <- runif(1)
-
       if (uniformRandomVariable < acceptProbability) {
         # Accept the parameter
         phi[k] <- phiProposed[k]
@@ -79,9 +74,11 @@ particleMetropolisHastings <-
     phi
   }
 
-
+##############################################################################
 # Particle Metropolis-Hastings (SV model)
-particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIterations, stepSize) {
+##############################################################################
+particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, 
+  noIterations, stepSize) {
   
   T <- length(y) - 1
 
@@ -99,7 +96,6 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
   logLikelihood[1] <- res$logLikelihood
   xHatFiltered[1, ] <- res$xHatFiltered
   
-  # Main loop
   for (k in 2:noIterations) {
     # Propose a new parameter
     thetaProposed[k, ] <- rmvnorm(1, mean = theta[k - 1, ], sigma = stepSize)
@@ -129,7 +125,6 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
     
     # Accept / reject step
     uniformRandomVariable <- runif(1)
-
     if (uniformRandomVariable < acceptProbability) {
       # Accept the parameter
       theta[k, ] <- thetaProposed[k, ]
@@ -185,10 +180,11 @@ particleMetropolisHastingsSVmodel <- function(y, initialTheta, noParticles, noIt
   list(theta = theta, xHatFiltered = xHatFiltered, proposedThetaAccepted = proposedThetaAccepted)
 }
 
-
+##############################################################################
 # Particle Metropolis-Hastings (reparameterised SV model)
-particleMetropolisHastingsSVmodelReparameterised <-
-    function(y, initialTheta, noParticles, noIterations, stepSize) {
+##############################################################################
+particleMetropolisHastingsSVmodelReparameterised <- function(y, initialTheta, 
+  noParticles, noIterations, stepSize) {
           
     T <- length(y) - 1
     
@@ -209,7 +205,6 @@ particleMetropolisHastingsSVmodelReparameterised <-
     logLikelihood[1] <- res$logLikelihood
     xHatFiltered[1, ] <- res$xHatFiltered
     
-    # Main loop
     for (k in 2:noIterations) {
       # Propose a new parameter
       thetaTransformedProposed[k, ] <- rmvnorm(1, mean = thetaTransformed[k - 1, ], sigma = stepSize)
@@ -234,7 +229,6 @@ particleMetropolisHastingsSVmodelReparameterised <-
 
       # Accept / reject step
       uniformRandomVariable <- runif(1)
-
       if (uniformRandomVariable < acceptProbability) {
         # Accept the parameter
         theta[k, ] <- thetaProposed[k, ]

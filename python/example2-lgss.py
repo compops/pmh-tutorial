@@ -1,4 +1,7 @@
+##############################################################################
 # Parameter estimation using particle Metropolis-Hastings in a LGSS model.
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
 from __future__ import print_function, division
 import matplotlib.pylab as plt
@@ -11,34 +14,36 @@ from helpers.parameterEstimation import particleMetropolisHastings
 # Set the random seed to replicate results in tutorial
 np.random.seed(10)
 
-# Define the model
+##############################################################################
+# Define the model and generate data
 # x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
 # y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
-
-# Set the parameters of the model theta = (phi, sigmav, sigmae), T, x_0
-parameters = np.zeros(3)
+##############################################################################
+parameters = np.zeros(3)    # theta = (phi, sigmav, sigmae)
 parameters[0] = 0.75
 parameters[1] = 1.00
 parameters[2] = 0.10
 noObservations = 250
 initialState = 0
 
-# Settings for PMH
+state, observations = generateData(parameters, noObservations, initialState)
+
+##############################################################################
+# PMH
+##############################################################################
 initialPhi = 0.50
 noParticles = 500           # Use noParticles ~ noObservations
 noBurnInIterations = 1000
 noIterations = 5000
 stepSize = 0.10
 
-# Generate data
-state, observations = generateData(parameters, noObservations, initialState)
-
-# Run the PMH algorithm
 phiTrace = particleMetropolisHastings(
     observations, initialPhi, parameters, noParticles, 
     initialState, particleFilter, noIterations, stepSize)
 
+##############################################################################
 # Plot the results
+##############################################################################
 noBins = int(np.floor(np.sqrt(noIterations - noBurnInIterations)))
 grid = np.arange(noBurnInIterations, noIterations, 1)
 phiTrace = phiTrace[noBurnInIterations:noIterations]

@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Particle Metropolis-Hastings (PMH) for the LGSS model
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[phi] = particleMetropolisHastings(observations, initialPhi, parameters, noParticles, initialState, noIterations, stepSize)
 
   sigmav = parameters(1);
@@ -15,9 +18,7 @@ function[phi] = particleMetropolisHastings(observations, initialPhi, parameters,
   parameters = [phi(1) sigmav sigmae];
   [~, logLikelihood(1)] = particleFilter(observations, parameters, noParticles, initialState);
   
-  % Main loop
-  for k = 2:noIterations
-    
+  for k = 2:noIterations  
     % Propose a new parameter
     phiProposed(k) = phi(k-1) + stepSize * normrnd(0, 1);
   
@@ -27,7 +28,7 @@ function[phi] = particleMetropolisHastings(observations, initialPhi, parameters,
       [~, logLikelihoodProposed(k)] = particleFilter(observations, thetaProposed, noParticles, initialState);
     end
     
-    % Compute the acceptance probability
+    % Compute the acceptance probability (reject if unstable system)
     prior = dnorm(phiProposed(k), 0, 1) - dnorm(phi(k - 1), 0, 1);
     likelihoodDifference = logLikelihoodProposed(k) - logLikelihood(k - 1);
     acceptProbability = exp(prior + likelihoodDifference);
@@ -35,9 +36,7 @@ function[phi] = particleMetropolisHastings(observations, initialPhi, parameters,
     
     % Accept / reject step
     uniformRandomVariable = unifrnd(0, 1);
-        
     if (uniformRandomVariable < acceptProbability)
-      
       % Accept the parameter
       phi(k) = phiProposed(k);
       logLikelihood(k) = logLikelihoodProposed(k);
@@ -62,7 +61,9 @@ function[phi] = particleMetropolisHastings(observations, initialPhi, parameters,
   end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Helper for computing the logarithm of N(x; mu, sigma^2)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[out] = dnorm(x, mu, sigma)
     out = -0.5 .* log(2 * pi) - 0.5 .* log(sigma.^2) - 0.5 ./ sigma.^2 .* (x - mu).^2;
 end

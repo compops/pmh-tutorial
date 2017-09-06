@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Particle Metropolis-Hastings (PMH) for the SV model
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[theta, xHatFiltered] = particleMetropolisHastingsSVmodel(observations, initialParameters, noParticles, noIterations, stepSize)
   noObservations = length(observations);
   
@@ -14,9 +17,7 @@ function[theta, xHatFiltered] = particleMetropolisHastingsSVmodel(observations, 
   theta(1, :) = initialParameters;  
   [xHatFiltered(1, :), logLikelihood(1)] = particleFilterSVmodel(observations, theta(1, :), noParticles);
   
-  % Main loop
-  for k = 2:noIterations
-    
+  for k = 2:noIterations  
     % Propose a new parameter
     thetaProposed(k, :) = mvnrnd(theta(k-1, :), stepSize);
   
@@ -25,23 +26,20 @@ function[theta, xHatFiltered] = particleMetropolisHastingsSVmodel(observations, 
       [xHatFilteredProposed(k, :), logLikelihoodProposed(k)] = particleFilterSVmodel(observations, thetaProposed(k, :), noParticles);
     end
     
-    % Compute the acceptance probability
+    % Compute the acceptance probability (reject if unstable)
     prior = dnorm(thetaProposed(k, 1), 0, 1);
     prior = prior - dnorm(theta(k - 1, 1), 0, 1);
     prior = prior + dnorm(thetaProposed(k, 2), 0.95, 0.05);
     prior = prior - dnorm(theta(k - 1, 2), 0.95, 0.05);
     prior = prior + dgamma(thetaProposed(k, 3), 2, 10);
     prior = prior - dgamma(theta(k - 1, 3), 2, 10);
-    
     likelihoodDifference = logLikelihoodProposed(k) - logLikelihood(k - 1);
     acceptProbability = exp(prior + likelihoodDifference);  
-    
     acceptProbability = acceptProbability * (abs(thetaProposed(k, 2)) < 1.0); 
     acceptProbability = acceptProbability * (thetaProposed(k, 3) > 0.0);
         
     % Accept / reject step
     uniformRandomVariable = unifrnd(0, 1);
-    
     if (uniformRandomVariable < acceptProbability)
       % Accept the parameter
       theta(k, :) = thetaProposed(k, :);
@@ -69,12 +67,16 @@ function[theta, xHatFiltered] = particleMetropolisHastingsSVmodel(observations, 
   end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Helper for computing the logarithm of N(x; mu, sigma^2)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[out] = dnorm(x, mu, sigma)
     out = -0.5 .* log(2 * pi) - 0.5 .* log(sigma.^2) - 0.5 ./ sigma.^2 .* (x - mu).^2;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Helper for computing the logarithm of Gamma(x; a, b) with mean a/b
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[out] = dgamma(x, a, b)
     out = a * log(b) - gammaln(a) + (a-1) * log(x) - b * x;
 end

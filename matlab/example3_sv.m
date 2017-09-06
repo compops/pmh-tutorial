@@ -1,24 +1,32 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Example of particle Metropolis-Hastings in a stochastic volatility model
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Set random seed
 rng(0)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 data = Quandl.get('NASDAQOMX/OMXS30', 'start_date', '2012-01-02', 'end_date', '2014-01-02', 'type', 'data'); 
 logReturns = 100 * diff(log(flipud(data(:, 2))));
 noObservations = length(logReturns);
 
-% Settings for PMH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PMH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 initialTheta  = [0 0.9 0.2];
 noParticles = 500;              % Use noParticles ~ noObservations
 noBurnInIterations = 2500;
 noIterations = 7500;
 stepSize = diag([0.10 0.01 0.05].^2);
 
-% Run the PMH algorithm
 [parameterTrace, logVolatilityEstimate] = particleMetropolisHastingsSVmodel(logReturns, initialTheta, noParticles, noIterations, stepSize);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 grid = noBurnInIterations:noIterations;
 noBins = floor(sqrt(noIterations - noBurnInIterations));
 logVolatilityEstimate = logVolatilityEstimate(grid, 2:(noObservations + 1));

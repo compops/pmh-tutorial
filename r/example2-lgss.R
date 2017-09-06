@@ -1,6 +1,8 @@
+##############################################################################
 # Parameter estimation using particle Metropolis-Hastings in a LGSS model.
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
-# Import helpers
 source("helpers/dataGeneration.R")
 source("helpers/stateEstimation.R")
 source("helpers/parameterEstimation.R")
@@ -14,29 +16,31 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
-# Define the model
+##############################################################################
+# Define the model and generate data
 # x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
-# y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)phi <- 0.75
+# y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
+##############################################################################
+phi <- 0.75
 sigmav <- 1.00
 sigmae <- 0.10
 T <- 250
 initialState <- 0
 
-# Generate data
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 
-# Settings for PMH
+##############################################################################
+# PMH
+##############################################################################
 initialPhi <- 0.50
 noParticles <- 100
 noBurnInIterations <- 1000
 noIterations <- 5000
 
-# Run the PMH algorithm
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example2-lgss.RData")
 } else {
-  res1 <-
-    particleMetropolisHastings(
+  res1 <- particleMetropolisHastings(
       data$y,
       initialPhi,
       sigmav,
@@ -46,8 +50,7 @@ if (loadSavedWorkspace) {
       noIterations,
       stepSize = 0.01
     )
-  res2 <-
-    particleMetropolisHastings(
+  res2 <- particleMetropolisHastings(
       data$y,
       initialPhi,
       sigmav,
@@ -57,8 +60,7 @@ if (loadSavedWorkspace) {
       noIterations,
       stepSize = 0.10
     )
-  res3 <-
-    particleMetropolisHastings(
+  res3 <- particleMetropolisHastings(
       data$y,
       initialPhi,
       sigmav,
@@ -70,7 +72,9 @@ if (loadSavedWorkspace) {
     )
 }
 
+##############################################################################
 # Plot the results
+##############################################################################
 resTh1 <- res1[noBurnInIterations:noIterations,]
 resTh2 <- res2[noBurnInIterations:noIterations,]
 resTh3 <- res3[noBurnInIterations:noIterations,]

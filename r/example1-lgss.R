@@ -1,6 +1,8 @@
+##############################################################################
 # State estimation in a LGSS model using particle and Kalman filters
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
-# Import helper
 source("helpers/dataGeneration.R")
 source("helpers/stateEstimation.R")
 
@@ -13,16 +15,17 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
-# Define the model
+##############################################################################
+# Define the model and generate data
 # x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
 # y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
+##############################################################################
 phi <- 0.75
 sigmav <- 1.00
 sigmae <- 0.10
 T <- 250
 initialState <- 0
 
-# Generate data
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 x <- data$x
 y <- data$y
@@ -56,7 +59,9 @@ polygon(c(grid, rev(grid)),
         col = rgb(t(col2rgb("#1B9E77")) / 256, alpha = 0.25))
 
 
+##############################################################################
 # State estimation using the particle filter and Kalman filter
+##############################################################################
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example1-lgss.RData")
 } else {
@@ -102,7 +107,9 @@ for (ii in 1:length(gridN)) {
   logBiasMSE[ii, 2] <- log(mean((pfEstimate - kfEstimate) ^ 2))
 }
 
+##############################################################################
 # Plot the bias and MSE for comparison
+##############################################################################
 plot(
   gridN,
   logBiasMSE[, 1],

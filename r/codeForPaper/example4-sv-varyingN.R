@@ -1,31 +1,11 @@
 ##############################################################################
-#
 # Example of particle Metropolis-Hastings in a stochastic volatility model
 # The effect on mixing while varying N.
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
 ##############################################################################
 
-# Import libraries
 library("Quandl")
 library("mvtnorm")
-
-# Import helpers
 source("../helpers/stateEstimation.R")
 source("../helpers/parameterEstimation.R")
 source("../helpers/plotting.R")
@@ -41,7 +21,6 @@ tuneProposals <- FALSE
 
 # Should we use the tuned proposals (requires "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
 useTunedProposals <- TRUE
-
 
 ##############################################################################
 # Load data
@@ -59,7 +38,6 @@ y <- as.numeric(100 * diff(log(d$"Index Value")))
 ##############################################################################
 # Likelihood estimation using particle filter
 ##############################################################################
-
 # True parameters estimated in example5-sv.R
 theta <- c(-0.12, 0.96, 0.17)
 
@@ -69,12 +47,10 @@ noParticles <- c(50, 100, 200, 300, 400, 500)
 # No. repetitions of log-likelihood estimate
 noSimulations <- 1000
 
-# Pre-allocate vectors
 logLikelihoodEstimates <- matrix(0, nrow = length(noParticles), ncol = noSimulations)
 logLikelihoodVariance <- rep(0, length(noParticles))
 computationalTimePerSample <- rep(0, length(noParticles))
 
-# Main loop
 if (!loadSavedWorkspace) {
   for (k in 1:length(noParticles)) {
     # Save the current time
@@ -98,11 +74,9 @@ if (!loadSavedWorkspace) {
   }
 }
 
-
 ##############################################################################
-# Parameter estimation using PMH
+# PMH
 ##############################################################################
-
 # The inital guess of the parameter (use the estimate of the posterior mean to
 # accelerated the algorithm, i.e., so less PMH iterations can be used).
 initialTheta <- theta
@@ -121,7 +95,6 @@ if (useTunedProposals) {
   }
 }
 
-# Main loop
 if (loadSavedWorkspace) {
   load("../savedWorkspaces/example4-sv-varyingN.RData")
 } else {
@@ -148,11 +121,9 @@ if (loadSavedWorkspace) {
   }
 }
 
-
 ##############################################################################
 # Post-processing (computing IACT and IACT * time)
 ##############################################################################
-
 resThetaIACT <- matrix(0, nrow = length(noParticles), ncol = 3)
 resThetaIACTperSecond <- matrix(0, nrow = length(noParticles), ncol = 3)
 
@@ -169,11 +140,9 @@ table <- rbind(noParticles, sqrt(logLikelihoodVariance), 100 * acceptProbability
 table <- round(table, 2)
 print(table)
 
-
 ##############################################################################
 # Tune the PMH proposal using a pilot run
 ##############################################################################
-
 if (tuneProposals) {
   proposals <- array(0, dim = c(length(noParticles), 3, 3))
   
@@ -183,18 +152,7 @@ if (tuneProposals) {
   save(proposals, file = "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
 }
 
-
-##############################################################################
-# Compute and save the results
-##############################################################################
-
-
 # Save the workspace to file
 if (!loadSavedWorkspace) {
   save.image("../savedWorkspaces/example4-sv-varyingN.RData")
 }
-
-
-##############################################################################
-# End of file
-##############################################################################

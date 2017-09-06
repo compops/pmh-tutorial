@@ -1,10 +1,10 @@
-# Parameter estimation using particle Metropolis-Hastings in a stochastic volatility model
+##############################################################################
+# Parameter estimation using particle Metropolis-Hastings in a SV model
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
-# Import libraries
 library("Quandl")
 library("mvtnorm")
-
-# Import helpers
 source("helpers/stateEstimation.R")
 source("helpers/parameterEstimation.R")
 source("helpers/plotting.R")
@@ -18,7 +18,9 @@ loadSavedWorkspace <- FALSE
 # Save plot to file
 savePlotToFile <- FALSE
 
+##############################################################################
 # Load data
+##############################################################################
 d <-
   Quandl(
     "NASDAQOMX/OMXS30",
@@ -28,23 +30,24 @@ d <-
   )
 y <- as.numeric(100 * diff(log(d$"Index Value")))
 
-
-# Settings for PMH
+##############################################################################
+# PMH
+##############################################################################
 initialTheta <- c(0, 0.9, 0.2)
 noParticles <- 500
 noBurnInIterations <- 2500
 noIterations <- 7500
 stepSize <- diag(c(0.10, 0.01, 0.05) ^ 2)
 
-# Run the PMH algorithm
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example3-sv.RData")
 } else {
-  res <-
-    particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
+  res <- particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
 }
 
+##############################################################################
 # Plot the results
+##############################################################################
 if (savePlotToFile) {
   cairo_pdf("figures/example3-sv.pdf",
             height = 10,
