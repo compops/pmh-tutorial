@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generates data from the LGSS model
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[states, observations] = generateData(parameters, noObservations, initialState)
   states = zeros(noObservations+1, 1);
   observations = zeros(noObservations+1, 1);

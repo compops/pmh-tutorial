@@ -1,5 +1,8 @@
+##############################################################################
 # Parameter estimation using particle Metropolis-Hastings 
 # in a stochastic volatility model
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
 from __future__ import print_function, division
 import matplotlib.pylab as plt
@@ -9,29 +12,32 @@ import numpy as np
 from helpers.stateEstimation import particleFilterSVmodel
 from helpers.parameterEstimation import particleMetropolisHastingsSVModel
 
-
 # Set the random seed to replicate results in tutorial
 np.random.seed(10)
 
+##############################################################################
 # Load data
+##############################################################################
 data = quandl.get("NASDAQOMX/OMXS30", trim_start="2012-01-02", trim_end="2014-01-02")
 logReturns = 100 * np.diff(np.log(data['Index Value']))
 noLogReturns = len(logReturns)
 
-# Settings for PMH
+##############################################################################
+# PMH
+##############################################################################
 initialTheta = np.array((0.0, 0.9, 0.2))    # Inital guess of theta = (mu, phi, sigmav)
 noParticles = 500                           # Choose noParticles ~ noLogReturns
 noBurnInIterations = 2500
 noIterations = 7500
 stepSize = np.diag((0.10**2, 0.01**2, 0.05**2))
 
-# Run the PMH algorithm
 logVolatilityEst, parameterTrace = particleMetropolisHastingsSVModel(
     logReturns, initialTheta, noParticles, 
     particleFilterSVmodel, noIterations, stepSize)
 
-
+##############################################################################
 # Plot the results
+##############################################################################
 noBins = int(np.floor(np.sqrt(noIterations - noBurnInIterations)))
 grid = np.arange(noBurnInIterations, noIterations, 1)
 logVolatilityEst = logVolatilityEst[noBurnInIterations:noIterations, :]

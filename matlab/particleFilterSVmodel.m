@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Bootstrap particle filter for the SV model
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[xHatFiltered, logLikelihood] = particleFilterSVmodel(observations, parameters, noParticles)
 
   noObservations = length(observations);
@@ -16,9 +19,7 @@ function[xHatFiltered, logLikelihood] = particleFilterSVmodel(observations, para
   particles(:, 1) = mu + sigmav / sqrt(1 - phi^2) * normrnd(0, 1, noParticles, 1);
   xHatFiltered(1) = mean(particles(:, 1));
   
-  % Main loop
-  for t = 2:(noObservations + 1)
-    
+  for t = 2:(noObservations + 1)    
     % Resample (multinomial)
     newAncestors = randsample(noParticles, noParticles, true, normalisedWeights(:, t - 1)); 
     ancestorIndices(:, 1:(t - 1)) = ancestorIndices(newAncestors, 1:(t - 1));
@@ -51,7 +52,9 @@ function[xHatFiltered, logLikelihood] = particleFilterSVmodel(observations, para
   end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Helper for computing the logarithm of N(x; mu, sigma^2)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[out] = dnorm(x, mu, sigma)
     out = -0.5 .* log(2 * pi) - 0.5 .* log(sigma.^2) - 0.5 ./ sigma.^2 .* (x - mu).^2;
 end

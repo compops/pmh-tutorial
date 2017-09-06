@@ -1,4 +1,7 @@
-% Kalman filtering for LGSS model
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Kalman filtering
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function xHatFiltered = kalmanFilter(observations, parameters, initialState, initialStateCov)
 
   noObservations = length(observations);
@@ -11,9 +14,7 @@ function xHatFiltered = kalmanFilter(observations, parameters, initialState, ini
   xHatPredicted = initialState * ones( noObservations, 1);
   predictiveCovariance = initialStateCov;
   
-  % Main loop
   for t = 1:noObservations
-
     % Correction step
     S = C * predictiveCovariance * C + R;
     kalmanGain = predictiveCovariance * C / S;

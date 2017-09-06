@@ -1,11 +1,16 @@
-## State estimation in LGSS and SV models using Kalman and particle filters.
+##############################################################################
+# State estimation in LGSS and SV models using Kalman and particle filters
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
 from __future__ import print_function, division
 import numpy as np
 from numpy.random import randn, choice
 from scipy.stats import norm
 
+##############################################################################
 # Kalman filter for the linear Gaussian SSM
+##############################################################################
 def kalmanFilter(observations, parameters, initialState, initialStateCov):
     
     noObservations = len(observations)
@@ -18,24 +23,23 @@ def kalmanFilter(observations, parameters, initialState, initialStateCov):
     xHatPredicted = initialState * np.ones((noObservations + 1, 1))
     xHatFiltered = initialState * np.ones((noObservations, 1))
 
-    # Main loop
     for t in range(0, noObservations):
-
         # Correction step
         S = C * predictiveCov * C + R
         kalmanGain = predictiveCov * C / S
         filteredCovariance = predictiveCov - kalmanGain * S * kalmanGain
-
         yHatPredicted = C * xHatPredicted[t]    
         xHatFiltered[t] = xHatPredicted[t] + kalmanGain * (observations[t - 1] - yHatPredicted)
-        
+
         # Prediction step
         xHatPredicted[t + 1] = A * xHatFiltered[t]
         predictiveCov = A * filteredCovariance * A + Q
 
     return xHatFiltered
 
+##############################################################################
 # Fully-adapted particle filter for the linear Gaussian SSM
+##############################################################################
 def particleFilter(observations, parameters, noParticles, initialState):
         
     noObservations = len(observations) - 1
@@ -49,16 +53,14 @@ def particleFilter(observations, parameters, noParticles, initialState):
     normalisedWeights = np.zeros((noParticles, noObservations))
     xHatFiltered = np.zeros((noObservations, 1))
 
-    # Set the initial state and weight
+    # Set the initial state and weights
     ancestorIndices[: , 0] = range(noParticles)
     particles[:, 0] = initialState
     xHatFiltered[0] = initialState
     normalisedWeights[:, 0] = 1.0 / noParticles
     logLikelihood = 0
 
-    # Main loop
     for t in range(1, noObservations):
-
         # Resample (multinomial)
         newAncestors = choice(noParticles, noParticles, p=normalisedWeights[:, t - 1], replace=True)
         ancestorIndices[:, 1:t - 1] = ancestorIndices[newAncestors, 1:t - 1]
@@ -89,7 +91,9 @@ def particleFilter(observations, parameters, noParticles, initialState):
 
     return xHatFiltered, logLikelihood
 
+##############################################################################
 # Bootstrap particle filter for the stochastic volatility model
+##############################################################################
 def particleFilterSVmodel(observations, parameters, noParticles):
 
     noObservations = len(observations)
@@ -103,15 +107,13 @@ def particleFilterSVmodel(observations, parameters, noParticles):
     normalisedWeights = np.zeros((noParticles, noObservations))
     xHatFiltered = np.zeros((noObservations, 1))
 
-    # Set the initial state and weight
+    # Set the initial state and weights
     particles[:, 0] = mu + sigmav / np.sqrt(1.0 - phi**2) * randn(1, noParticles)
     normalisedWeights[:, 0] = 1.0 / noParticles
     weights[:, 0] = 1.0
     logLikelihood = 0
-
-    # Main loop
+    
     for t in range(1, noObservations):
-
         # Resample particles
         newAncestors = choice(noParticles, noParticles, p=normalisedWeights[:, t - 1], replace=True)
         ancestorIndices[:, 1:t - 1] = ancestorIndices[newAncestors, 1:t - 1]

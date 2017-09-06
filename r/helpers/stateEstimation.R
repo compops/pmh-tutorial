@@ -1,6 +1,11 @@
-## State estimation in LGSS and SV models using Kalman and particle filters.
+##############################################################################
+# State estimation in LGSS and SV models using Kalman and particle filters.
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
+##############################################################################
 # Fully-adapted particle filter for the linear Gaussian SSM
+##############################################################################
 particleFilter <- function(y, theta, noParticles, initialState) {
   
   T <- length(y) - 1
@@ -21,9 +26,7 @@ particleFilter <- function(y, theta, noParticles, initialState) {
   xHatFiltered[ ,1] <- initialState  
   normalisedWeights[, 1] = 1 / noParticles
   
-  # Main loop
   for (t in 2:T) {
-    
     # Resample ( multinomial )
     newAncestors <- sample(noParticles, replace = TRUE, prob = normalisedWeights[, t - 1])
     ancestorIndices[, 1:(t - 1)] <- ancestorIndices[newAncestors, 1:(t - 1)]
@@ -62,7 +65,9 @@ particleFilter <- function(y, theta, noParticles, initialState) {
   
 }
 
+##############################################################################
 # Kalman filter for the linear Gaussian SSM
+##############################################################################
 kalmanFilter <- function(y, theta, initialState, initialStateCovariance) {
   
   T <- length(y)
@@ -72,7 +77,6 @@ kalmanFilter <- function(y, theta, initialState, initialStateCovariance) {
   predictedStateCovariance <- initialStateCovariance
   logLikelihood <- 0
   
-  # Set parameters
   A <- theta[1] 
   C <- 1
   Q <- theta[2] ^ 2
@@ -100,7 +104,9 @@ kalmanFilter <- function(y, theta, initialState, initialStateCovariance) {
   list(xHatFiltered = xHatFiltered, logLikelihood = logLikelihood)
 }
 
+##############################################################################
 # Bootstrap particle filter for the stochastic volatility model
+##############################################################################
 particleFilterSVmodel <- function(y, theta, noParticles) {
   
   T <- length(y) - 1
@@ -108,7 +114,6 @@ particleFilterSVmodel <- function(y, theta, noParticles) {
   phi <- theta[2]
   sigmav <- theta[3]  
   
-  # Initialise variables
   particles <- matrix(0, nrow = noParticles, ncol = T + 1)
   ancestorIndices <- matrix(0, nrow = noParticles, ncol = T + 1)
   weights <- matrix(1, nrow = noParticles, ncol = T + 1)
@@ -122,9 +127,7 @@ particleFilterSVmodel <- function(y, theta, noParticles) {
   # Generate initial state
   particles[, 1] <- rnorm(noParticles, mu, sigmav / sqrt(1 - phi^2))
   
-  # Main loop
   for (t in 2:(T + 1)) {
-
     # Resample ( multinomial )
     newAncestors <- sample(noParticles, replace = TRUE, prob = normalisedWeights[, t - 1])
     ancestorIndices[, 1:(t - 1)] <- ancestorIndices[newAncestors, 1:(t - 1)]

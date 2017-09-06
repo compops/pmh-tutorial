@@ -1,26 +1,8 @@
 ##############################################################################
-#
 # Generates and plots data from a LGSS model.
-#
-# Copyright (C) 2017 Johan Dahlin < liu (at) johandahlin.com.nospam >
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
 ##############################################################################
 
-# Import helper
 source("../helpers/dataGeneration.R")
 source("../helpers/stateEstimation.R")
 
@@ -31,30 +13,15 @@ set.seed(10)
 savePlotToFile <- TRUE
 
 ##############################################################################
-# Define the model
+# Define the model and generate data
+# x[t + 1] = phi * x[t] + sigmav * v[t],    v[t] ~ N(0, 1)
+# y[t] = x[t] + sigmae * e[t],              e[t] ~ N(0, 1)
 ##############################################################################
-
-# Here, we use the following model
-#
-# x[tt+1] = phi   * x[tt] + sigmav * v[tt]
-# y[tt]   = x[tt]         + sigmae * e[tt]
-#
-# where v[tt] ~ N(0,1) and e[tt] ~ N(0,1)
-
-# Set the parameters of the model
 phi <- 0.75
 sigmav <- 1.00
 sigmae <- 0.10
-
-# Set the number of time steps to simulate
 T <- 250
-
-# Set the initial state
 initialState <- 0
-
-##############################################################################
-# Generate data
-##############################################################################
 
 data <- generateData(c(phi, sigmav, sigmae), T, initialState)
 x <- data$x
@@ -136,7 +103,3 @@ abline(h = 1.96 / sqrt(T), lty = "dotted")
 if (savePlotToFile) {
   dev.off()
 }
-
-###################################################################################
-# End of file
-###################################################################################

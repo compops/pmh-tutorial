@@ -1,4 +1,7 @@
+##############################################################################
 # Make plots for tutorial
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 makePlotsParticleMetropolisHastingsSVModel <- function(y, res, noBurnInIterations, noIterations, nPlot) {
   
   # Extract the states after burn-in

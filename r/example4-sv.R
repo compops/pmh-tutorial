@@ -1,11 +1,11 @@
-# Parameter estimation using particle Metropolis-Hastings in a stochastic 
-# volatility model with a proposal adapted from a pilot run.
+##############################################################################
+# Parameter estimation using particle Metropolis-Hastings in a SV
+# with a proposal adapted from a pilot run.
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 
-# Import libraries
 library("Quandl")
 library("mvtnorm")
-
-# Import helpers
 source("helpers/stateEstimation.R")
 source("helpers/parameterEstimation.R")
 source("helpers/plotting.R")
@@ -18,7 +18,6 @@ loadSavedWorkspace <- FALSE
 
 # Save plot to file
 savePlotToFile <- FALSE
-
 
 ##############################################################################
 # Load data
@@ -34,20 +33,13 @@ y <- as.numeric(100 * diff(log(d$"Index Value")))
 
 
 ##############################################################################
-# Parameter estimation using PMH
+# PMH
 ##############################################################################
 
-# The inital guess of the parameter
 initialTheta <- c(0, 0.9, 0.2)
-
-# No. particles in the particle filter ( choose noParticles ~ T )
 noParticles <- 500
-
-# The length of the burn-in and the no. iterations of PMH ( noBurnInIterations < noIterations )
 noBurnInIterations <- 2500
 noIterations <- 7500
-
-# The standard deviation in the random walk proposal
 stepSize <- matrix(
   c(
     0.137255431,-0.0016258103,
@@ -61,19 +53,15 @@ stepSize <- matrix(
 )
 stepSize <- 2.562^2 / 3 * stepSize
 
-# Run the PMH algorithm
 if (loadSavedWorkspace) {
   load("savedWorkspaces/example4-sv.RData")
 } else {
-  res <-
-    particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
+  res <- particleMetropolisHastingsSVmodel(y, initialTheta, noParticles, noIterations, stepSize)
 }
 
 ##############################################################################
 # Plot the results
 ##############################################################################
-
-# Export plot to file
 if (savePlotToFile) {
   cairo_pdf("figures/example4-sv.pdf",
             height = 10,
@@ -86,7 +74,6 @@ iact <- makePlotsParticleMetropolisHastingsSVModel(y, res, noBurnInIterations, n
 if (savePlotToFile) {
   dev.off()
 }
-
 
 ##############################################################################
 # Compute and save the results

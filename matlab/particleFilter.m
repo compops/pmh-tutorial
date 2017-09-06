@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fully-adapted particle filter for the linear Gaussian SSM
+% (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[xHatFiltered, logLikelihood] = particleFilter(observations, parameters, noParticles, initialState)
   
   noObservations = length(observations) - 1;
@@ -17,9 +20,7 @@ function[xHatFiltered, logLikelihood] = particleFilter(observations, parameters,
   xHatFiltered(1) = initialState;
   particles(:, 1) = initialState;
   
-  % Main loop
   for t = 2:noObservations
-
     % Resample (multinomial)
     newAncestors = randsample(noParticles, noParticles, true, normalisedWeights(:,t - 1)); 
     ancestorIndices(:, 1:(t - 1)) = ancestorIndices(newAncestors, 1:(t - 1));
@@ -48,7 +49,9 @@ function[xHatFiltered, logLikelihood] = particleFilter(observations, parameters,
   end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Helper for computing the logarithm of the Gaussian density
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[out] = dnorm(x, mu, sigma)
     out = -0.5 .* log(2 * pi) - 0.5 .* log(sigma.^2) - 0.5 ./ sigma.^2 .* (x - mu).^2;
 end

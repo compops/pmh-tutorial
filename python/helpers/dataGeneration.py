@@ -1,10 +1,12 @@
+##############################################################################
+# Generates data from the LGSS model
+# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+##############################################################################
 from __future__ import print_function, division
 import numpy as np
 from numpy.random import randn
 
-# Generates data from the LGSS model
 def generateData(theta, noObservations, initialState):
-
     phi = theta[0]
     sigmav = theta[1]
     sigmae = theta[2]
