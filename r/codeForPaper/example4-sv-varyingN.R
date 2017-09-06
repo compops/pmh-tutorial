@@ -1,7 +1,10 @@
 ##############################################################################
 # Example of particle Metropolis-Hastings in a stochastic volatility model
 # The effect on mixing while varying N.
-# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+#
+# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Documentation at https://github.com/compops/pmh-tutorial
+# Published under GNU General Public License
 ##############################################################################
 
 library("Quandl")

@@ -2,7 +2,10 @@
 # Ugly code to plot the estimate of the posterior distribution and the 
 # proposal distribution adapted from a pilot run of particle 
 # Metropolis-Hastings.
-# (c) Johan Dahlin 2017 under MIT license <liu@johandahlin.com.nospam>
+#
+# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Documentation at https://github.com/compops/pmh-tutorial
+# Published under GNU General Public License
 ##############################################################################
 
 # Import helpers
