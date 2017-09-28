@@ -14,10 +14,6 @@ Included material
 
 **matlab/** Code for MATLAB to implement the basic algorithms covered in the tutorial. Implementations for the advanced topics are not provided. Only simple plotting is implemented and no figures or saved data from runs are provided.
 
-**r-package/** The files for the R package pmhtutorial on CRAN. These are very similar to the files in *r/*, which is more useful to learn the algorithms covered in the tutorial. However, this R package is simple to download and use directly.
-
-**matlab-skeleton** Skeleton code files for MATLAB to help step-by-step implementation during courses and seminars. 
-
 Copyright information
 --------------
 See *LICENSE* for more information.
