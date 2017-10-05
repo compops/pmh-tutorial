@@ -1,6 +1,6 @@
 # R code for PMH tutorial
 
-This R code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: http://arxiv.org/pdf/1511.01707
+This R code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatility (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at: http://arxiv.org/pdf/1511.01707
 
 Requirements
 --------------
@@ -13,7 +13,7 @@ Main script files
 --------------
 These are the main script files that implement the various algorithms discussed in the tutorial.
 
-**example1-lgss.R** State estimation in a LGSS model using the KM and a fully-adapted PF (faPF). The code is discussed in Section 3.1 and the results are presented in Section 3.2 as Figure 4 and Table 1.
+**example1-lgss.R** State estimation in a LGSS model using the KF and a fully-adapted PF (faPF). The code is discussed in Section 3.1 and the results are presented in Section 3.2 as Figure 4 and Table 1.
 
 **example2-lgss.R** Parameter estimation of one parameter in the LGSS model using PMH with the faPF as the likelihood estimator. The code is discussed in Section 4.1 and the results are presented in Section 4.2 as Figure 5.
 
@@ -21,7 +21,7 @@ These are the main script files that implement the various algorithms discussed 
 
 **example4-sv.R** Modified version of the code in *example3-sv.R* to make use of a better tailored parameter proposal. The details are discussed in Section 6.3.2 and the results are presented in the same section as Figures 7 and 8. Note that the only difference in the code is that the variable stepSize is changed.
 
-**example5-sv.R** Modified version of the code in *example3-sv.R* to make use of another parameterisation of the model and a better tailored parameter proposal. The details are discussed in Section 6.3.3 and the results are presented in the same section. Note that the differences in the code is the use of another implemenation of PMH ant that the variable stepSize is changed.
+**example5-sv.R** Modified version of the code in *example3-sv.R* to make use of another parameterisation of the model and a better tailored parameter proposal. The details are discussed in Section 6.3.3 and the results are presented in the same section. Note that the differences in the code is the use of another implementation of PMH ant that the variable stepSize is changed.
 
 
 Additional script files for creating plots for tutorial (extra-code-for-tutorial/)
@@ -62,7 +62,7 @@ In the particle filter, you need to change the lines connected to: (i) the sampl
 ``` R
   particles[, 1] <- rnorm(noParticles, mu, sigmav / sqrt(1 - phi^2))
 ```
-to fit your model. Two simple choices are to make use of the stationary distribution of the state (as is done for the SV model) computed by hand or to initialise all particles to some value (as is done in the LGSS model) by:
+to fit your model. Two simple choices are to make use of the stationary distribution of the state (as is done for the SV model) computed by hand or to initialize all particles to some value (as is done in the LGSS model) by:
 ``` R
   particles[, 1] <- initialState
 ```
@@ -82,10 +82,10 @@ For (iii), you need to change:
 ```
 to something else. For the bPF, this corresponds to the observation process of your state-space model.
 
-Finally, note that the particle filter implemetation can only be used for state-space models where the state and observation are scalar. However, it is quite straightforward to make use of particle filtering when the state and/or observations are multivariate. It is basically only bookkeeping. If the dimension of the state is larger than say 5, good proposals are usually required to not run into the curse of dimensionality. This is a hot current research topic in the particle filtering literature.
+Finally, note that the particle filter implementation can only be used for state-space models where the state and observation are scalar. However, it is quite straightforward to make use of particle filtering when the state and/or observations are multivariate. It is basically only bookkeeping. If the dimension of the state is larger than say 5, good proposals are usually required to not run into the curse of dimensionality. This is a hot current research topic in the particle filtering literature.
 
 ### Particle Metropolis-Hastings
-The implemenation of the PMH algorithm is general and does not require any larger changes if the model is changed. The dimensionality of the variables *xHatFiltered*, *xHatFilteredProposed*, *theta* and *thetaProposed* needs to be altered to match the dimensionality of the state and the number of parameters in the new state-space model. Moreover, the initial value of theta and the proposal distribution need to be calibrated for your new model. The simplest way to do this is by so-called pilot runs. Set the initial value to something reasonable and stepSize to a diagonal matrix with quite small elements, so that you get at least some accepted proposed values. After the pilot run, adapt the proposal as is discussed in 6.3.2 and initialise the PMH algorithm in the estimated posterior mean. Repeat this one or two more times or until you are satisfied. 
+The implementation of the PMH algorithm is general and does not require any larger changes if the model is changed. The dimensionality of the variables *xHatFiltered*, *xHatFilteredProposed*, *theta* and *thetaProposed* needs to be altered to match the dimensionality of the state and the number of parameters in the new state-space model. Moreover, the initial value of theta and the proposal distribution need to be calibrated for your new model. The simplest way to do this is by so-called pilot runs. Set the initial value to something reasonable and stepSize to a diagonal matrix with quite small elements, so that you get at least some accepted proposed values. After the pilot run, adapt the proposal as is discussed in 6.3.2 and initialise the PMH algorithm in the estimated posterior mean. Repeat this one or two more times or until you are satisfied. 
 
 It is known that this simple version of PMH performs bad when the number of parameters is larger than about 5. To circumvent this problem, see the suggestions in Sections 4.3 and 6. It is also discussed there how to choose the number of particles *noParticles* and the number of iterations *noIterations* to use in the PMH algorithm. *noBurnInIterations* can be selected by looking at the trace plot for when the Markov chain has reached its steady-state/stationarity. I usually use *noIterations* as 10,000 or 30,000 (with *noBurnInIterations* as 3,000 or 10,0000) to get good posterior estimates but these runs take time. Also, using *noParticles* as somewhere between *T* and 2*T* is a good place to start.
 
