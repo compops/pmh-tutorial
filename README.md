@@ -4,7 +4,7 @@ This code was downloaded from https://github.com/compops/pmh-tutorial and contai
 
 J. Dahlin and T. B. Schön, **Getting started with particle Metropolis-Hastings for inference in nonlinear models**. Pre-print, arXiv:1511:01707, 2017. 
 
-The tutorial is available as a preprint from http://arxiv.org/pdf/1511.01707. An R package is also provided on CRAN with the implementation of the turorial in R. The source code (almost identitical to the code in the subdirectory R/) is found at https://github.com/compops/pmh-tutorial-rpkg.
+The tutorial is available as a preprint from http://arxiv.org/pdf/1511.01707. An R package is also provided on CRAN with the implementation of the tutorial in R. The source code (almost identical to the code in the subdirectory R/) is found at https://github.com/compops/pmh-tutorial-rpkg.
 
 Included material
 --------------
@@ -13,6 +13,10 @@ Included material
 **python/** Code for Python to implement the basic algorithms covered in the tutorial. Implementations for the advanced topics are not provided. Only simple plotting is implemented and no figures or saved data from runs are provided.
 
 **matlab/** Code for MATLAB to implement the basic algorithms covered in the tutorial. Implementations for the advanced topics are not provided. Only simple plotting is implemented and no figures or saved data from runs are provided.
+
+Generalisations
+--------------
+There is source code available for Python that implements some of the generalisations discussed in the tutorial. See the README file under *python/* for more information.
 
 Copyright information
 --------------
