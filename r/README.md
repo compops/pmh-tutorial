@@ -24,7 +24,7 @@ These are the main script files that implement the various algorithms discussed 
 **example5-sv.R** Modified version of the code in *example3-sv.R* to make use of another parameterisation of the model and a better tailored parameter proposal. The details are discussed in Section 6.3.3 and the results are presented in the same section. Note that the differences in the code is the use of another implemenation of PMH ant that the variable stepSize is changed.
 
 
-Additional script files for creating plots for tutorial (codeForPaper/)
+Additional script files for creating plots for tutorial (extra-code-for-tutorial/)
 --------------
 These are some additional files to recreate some extra results discussed in the tutorial.
 
@@ -47,8 +47,11 @@ Supporting files (helpers/)
 
 Saved results (savedWorkspaces/ and figures/)
 --------------
+These directories are placeholders for the output from running the code. The workspaces and plots used in the tutorial are found as a zip-file in the [latest release of the code](https://github.com/compops/pmh-tutorial/releases/latest) as binaries are not usually version controlled by Git and the workspaces are quite large (ca 80 mb).
+
 **savedWorkspaces/** Saved copies of the workspace after running the corresponding code. These outputs are used to generate all the results in the aper. Can be used to directly recreate the plots in the tutorial by setting the flags loadSavedWorkspace and savePlotToFile to TRUE.
 
+**figures/** Saved plots from running the files.
 
 Adapting the code for another model
 --------------

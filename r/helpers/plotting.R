@@ -121,7 +121,6 @@ makePlotsParticleMetropolisHastingsSVModel <- function(y, res, noBurnInIteration
       xlab = "iteration",
       ylab = parameterNames[k],
       ylim = parameterScales[k,],
-      xlim = c(2500, 4000),
       bty = "n"
     )
     polygon(

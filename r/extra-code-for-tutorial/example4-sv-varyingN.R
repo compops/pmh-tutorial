@@ -23,7 +23,7 @@ loadSavedWorkspace <- FALSE
 tuneProposals <- FALSE
 
 # Should we use the tuned proposals (requires "../savedWorkspaces/example4-sv-varyingN-proposals.RData")
-useTunedProposals <- TRUE
+useTunedProposals <- FALSE
 
 ##############################################################################
 # Load data
