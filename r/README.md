@@ -43,7 +43,7 @@ Supporting files (helpers/)
 
 **stateEstimation.R** Implements the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
 
-**plotting.R** Generate the gigures presented in the paper using the output of the PMH algorithm for the SV model.
+**plotting.R** Generate the figures presented in the paper using the output of the PMH algorithm for the SV model.
 
 Saved results (savedWorkspaces/ and figures/)
 --------------
