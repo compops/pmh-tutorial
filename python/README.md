@@ -1,6 +1,6 @@
 # Python code for PMH tutorial
 
-This Python code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatilty (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at http://arxiv.org/pdf/1511.01707
+This Python code implements the Kalman filter (KF), particle filter (PF) and particle Metropolis-Hastings (PMH) algorithm for two different dynamical models: a linear Gaussian state-space (LGSS) model and a stochastic volatility (SV) model. Note that the Kalman filter can only be employed for the first of these two models. The details of the code is described in the tutorial paper available at http://arxiv.org/pdf/1511.01707
 
 Note that the Python code in this folder covers the basic implementations in the paper. The notation of the variables has been changed sligthly compared with the tutorial paper to improve readability of the code. However, it should be easy to translate between the two. See the R code in r/ for all the implementations and to recreate the results in the tutorial.
 
@@ -26,7 +26,7 @@ Supporting files (helpers/)
 --------------
 **dataGeneration.py** Generates data from a LGSS model.
 
-**parameterEstimation.py** Implements the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel). 
+**parameterEstimation.py** Implements the PMH algorithm for the LGSS model (particleMetropolisHastings) and the SV model (particleMetropolisHastingsSVModel).
 
 **stateEstimation.py** Implements the faPF for the LGSS model (particleFilter), the Kalman filter for the LGSS model (kalmanFilter) and the bPF for the SV model (paticleFilterSVmodel).
 
@@ -34,6 +34,10 @@ Supporting files (helpers/)
 Adapting the code for another model
 --------------
 See the discussion in *README.MD* in the directory *r/*.
+
+Generalisations
+--------------
+Some generalisations and improvements of this code is discussed in the tutorial, see the last paragraph in Section 7. Python code for PMH1 and PMH2 is available in the repo [pmh-stco2015](https://github.com/compops/pmh-stco2015), Python code for qPMH2 is availabe in the repo [https://github.com/compops/qpmh2-sysid2015](qpmh2-sysid2015) and Python code for correlated pseudo-marginal Metropolis-Hastings is available in the repo [https://github.com/compops/pmmh-correlated2015](pmmh-correlated2015). These are excellent resources for getting up to speed with the current frontier in research connected to PMH.
 
 Copyright information
 --------------

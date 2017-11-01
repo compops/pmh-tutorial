@@ -224,7 +224,7 @@ particleMetropolisHastingsSVmodelReparameterised <- function(y, initialTheta,
       logPrior3 <- dgamma(thetaProposed[k, 3], 3, 10, log = TRUE) - dgamma(theta[k - 1, 3], 3, 10, log = TRUE)
       logPrior <- logPrior1 + logPrior2 + logPrior3
       
-      logJacob1 <- log(abs(1 - thetaProposed[k, 2]^2)) -log(abs(1 - theta[k - 1, 2]^2))
+      logJacob1 <- log(abs(1 - thetaProposed[k, 2]^2)) - log(abs(1 - theta[k - 1, 2]^2))
       logJacob2 <- log(abs(thetaProposed[k, 3])) - log(abs(theta[k - 1, 3]))
       logJacob <- logJacob1 + logJacob2
       
