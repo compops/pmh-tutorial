@@ -1,9 +1,9 @@
 ##############################################################################
-# Ugly code to plot the estimate of the posterior distribution and the 
-# proposal distribution adapted from a pilot run of particle 
+# Ugly code to plot the estimate of the posterior distribution and the
+# proposal distribution adapted from a pilot run of particle
 # Metropolis-Hastings.
 #
-# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Johan Dahlin <uni (at) johandahlin.com.nospam>
 # Documentation at https://github.com/compops/pmh-tutorial
 # Published under GNU General Public License
 ##############################################################################
@@ -15,7 +15,7 @@ library("mvtnorm")
 # Save plot to file
 savePlotToFile <- FALSE
 
-# Load the run 
+# Load the run
 load("../savedWorkspaces/example3-sv.RData")
 
 ##############################################################################
@@ -85,7 +85,7 @@ for (ii in 1:length(gridth2)) {
 
 
 ##############################################################################
-# Evaluate the proposal distribution over the grid centered at the 
+# Evaluate the proposal distribution over the grid centered at the
 # posterior mean
 ##############################################################################
 

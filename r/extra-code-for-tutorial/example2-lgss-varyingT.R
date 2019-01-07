@@ -1,8 +1,8 @@
 ##############################################################################
-# Runs the particle Metropolis-Hastings algorithm from different number 
+# Runs the particle Metropolis-Hastings algorithm from different number
 # of observations generated from a LGSS model.
 #
-# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Johan Dahlin <uni (at) johandahlin.com.nospam>
 # Documentation at https://github.com/compops/pmh-tutorial
 # Published under GNU General Public License
 ##############################################################################
@@ -44,7 +44,7 @@ if (loadSavedWorkspace) {
   load("../savedWorkspaces/example2-lgss-varyingT.RData")
 } else {
   for (i in 1:length(TT)) {
-    
+
     set.seed(10)
     data <- generateData(c(phi, sigmav, sigmae), TT[i], initialState)
     res <-
@@ -58,7 +58,7 @@ if (loadSavedWorkspace) {
         noIterations,
         stepSize
       )
-    
+
     Tmean[i] <- mean(res[noBurnInIterations:noIterations])
     Tvar[i]  <- var(res[noBurnInIterations:noIterations])
   }

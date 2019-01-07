@@ -2,7 +2,7 @@
 # Example of particle Metropolis-Hastings in a stochastic volatility model
 # The effect on mixing while varying N.
 #
-# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Johan Dahlin <uni (at) johandahlin.com.nospam>
 # Documentation at https://github.com/compops/pmh-tutorial
 # Published under GNU General Public License
 ##############################################################################
@@ -58,19 +58,19 @@ if (!loadSavedWorkspace) {
   for (k in 1:length(noParticles)) {
     # Save the current time
     ptm <- proc.time()
-    
+
     for (i in 1:noSimulations) {
       # Run the particle filter
       res <- particleFilterSVmodel(y, theta, noParticles[k])
-      
+
       # Save the log-Likelihood estimate
       logLikelihoodEstimates[k, i] <- res$logLikelihood
     }
-    
+
     # Compute the variance of the log-likelihood and computational time per sample
     logLikelihoodVariance[k] <- var(logLikelihoodEstimates[k, ])
     computationalTimePerSample[k] <- (proc.time() - ptm)[3] / noSimulations
-    
+
     # Print to screen
     print(paste(paste(paste(paste("Simulation: ", k, sep = ""), " of ", sep = ""), length(noParticles), sep = ""), " completed.", sep = ""))
     print(paste(paste(paste(paste("No. particles: ", noParticles[k], sep = ""), " requires ", sep = ""), computationalTimePerSample[k], sep = ""), " seconds for computing one sample.", sep = ""))
@@ -104,21 +104,21 @@ if (loadSavedWorkspace) {
   resTheta <- array(0, dim = c(length(noParticles), noIterations - noBurnInIterations + 1, 3))
   computationalTimePerIteration <- rep(0, length(noParticles))
   acceptProbability <- rep(0, length(noParticles))
-  
+
   for (k in 1:length(noParticles)) {
     # Save the current time
     ptm <- proc.time()
-    
+
     # Run the PMH algorithm
     res <- particleMetropolisHastingsSVmodel(y, initialTheta, noParticles[k], noIterations, stepSize = proposals[k, ,])
-    
+
     # Save the parameter trace
     resTheta[k, ,] <- res$theta[noBurnInIterations:noIterations,]
-    
+
     # Compute acceptance probability and computational time per sample
-    computationalTimePerIteration[k] <- (proc.time() - ptm)[3] / noIterations    
+    computationalTimePerIteration[k] <- (proc.time() - ptm)[3] / noIterations
     acceptProbability[k] <- mean(res$proposedThetaAccepted[noBurnInIterations:noIterations])
-    
+
     # Print to screen
     print(paste(paste(paste(paste("Simulation: ", k, sep = ""), " of ", sep = ""), length(noParticles), sep = ""), " completed.", sep = ""))
   }
@@ -134,7 +134,7 @@ for (k in 1:length(noParticles)) {
   acf_mu <- acf(resTheta[k, , 1], plot = FALSE, lag.max = 250)
   acf_phi <- acf(resTheta[k, , 2], plot = FALSE, lag.max = 250)
   acf_sigmav <- acf(resTheta[k, , 3], plot = FALSE, lag.max = 250)
-  
+
   resThetaIACT[k, ] <- 1 + 2 * c(sum(acf_mu$acf), sum(acf_phi$acf), sum(acf_sigmav$acf))
   resThetaIACTperSecond[k, ] <- resThetaIACT[k, ] / computationalTimePerIteration[k]
 }
@@ -148,7 +148,7 @@ print(table)
 ##############################################################################
 if (tuneProposals) {
   proposals <- array(0, dim = c(length(noParticles), 3, 3))
-  
+
   for (k in 1:length(noParticles)) {
     proposals[k, , ] <- cov(resTheta[k, , ]) * 2.562^2 / 3
   }

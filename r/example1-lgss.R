@@ -1,7 +1,7 @@
 ##############################################################################
 # State estimation in a LGSS model using particle and Kalman filters
 #
-# Johan Dahlin <liu (at) johandahlin.com.nospam>
+# Johan Dahlin <uni (at) johandahlin.com.nospam>
 # Documentation at https://github.com/compops/pmh-tutorial
 # Published under GNU General Public License
 ##############################################################################
@@ -105,7 +105,7 @@ for (ii in 1:length(gridN)) {
     particleFilter(y, c(phi, sigmav, sigmae), gridN[ii], initialState)
   pfEstimate <- pfEstimate$xHatFiltered
   kfEstimate <- outputKF$xHatFiltered[-(T + 1)]
-  
+
   logBiasMSE[ii, 1] <- log(mean(abs(pfEstimate - kfEstimate)))
   logBiasMSE[ii, 2] <- log(mean((pfEstimate - kfEstimate) ^ 2))
 }
@@ -158,7 +158,7 @@ if (savePlotToFile) {
 # Print a table (no. particles, log-bias, log-mse)
 print(t(rbind(gridN, t(logBiasMSE))))
 
-# gridN                     
+# gridN
 # [1,]    10 -3.696997  -6.938594
 # [2,]    20 -3.964671  -7.493297
 # [3,]    50 -4.567552  -8.718346
