@@ -21,6 +21,7 @@ loadSavedWorkspace <- FALSE
 
 # Save plot to file
 savePlotToFile <- FALSE
+nPlot <- 2500
 
 ##############################################################################
 # Load data
@@ -78,15 +79,16 @@ if (savePlotToFile) {
 ##############################################################################
 
 # Print the estimate of the posterior mean and standard deviation
-print(thhat)
-print(thhatSD)
+resTh <- res$theta[noBurnInIterations:noIterations, ]
+thhat   <- colMeans(resTh)
+thhatSD <- apply(resTh, 2, sd)
 
-#[1] -0.1466918  0.9577250  0.1813333
-#[1] 0.21236553 0.02287443 0.05967315
+#[1] -0.1550373  0.9601144  0.1742736
+#[1] 0.23637116 0.02239614 0.05701460
 
 # Compute an estimate of the IACT using the first 100 ACF coefficients
 print(iact)
-# [1] 12.55590 20.63091 16.94274
+# [1] 21.93670 28.96783 16.65938
 
 # Estimate the covariance of the posterior to tune the proposal
 resThTransformed <- res$thetaTransformed[noBurnInIterations:noIterations,]

@@ -20,6 +20,7 @@ loadSavedWorkspace <- FALSE
 
 # Save plot to file
 savePlotToFile <- FALSE
+nPlot <- 2500
 
 ##############################################################################
 # Load data
@@ -65,6 +66,10 @@ if (savePlotToFile) {
 }
 
 # Print the estimate of the posterior mean and standard deviation
+resTh <- res$theta[noBurnInIterations:noIterations, ]
+thhat   <- colMeans(resTh)
+thhatSD <- apply(resTh, 2, sd)
+
 print(thhat)
 print(thhatSD)
 
